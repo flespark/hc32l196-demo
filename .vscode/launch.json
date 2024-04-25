@@ -1,0 +1,27 @@
+// Configure debug launch settings
+{
+    "version": "0.2.0",
+    "projectName": "asr6601-demo",
+    "configurations": [
+        {
+            // "showDevDebugOutput": "raw",
+            "name": "jlink debug",
+            "cwd": "${workspaceFolder}",
+            "executable": "${workspaceFolder}/build/hc32l196-demo.elf",
+            "request": "launch",
+            "type": "cortex-debug",
+            "servertype": "jlink",
+            "serverpath": "C:/Program Files/SEGGER/JLink/JLinkGDBServerCL.exe",
+            "device": "HC32L19X",
+            "interface": "swd",
+            "svdPath": "${workspaceFolder}/Device/EWARM/HC32L19X.svd",
+            "runToEntryPoint": "main",
+            "overrideResetCommands": ["monitor reset halt"],
+            "gdbPath": "C:\\Program Files\\xpack-arm-none-eabi-gcc-13.2.1-1.1\\bin\\arm-none-eabi-gdb.exe",
+            "liveWatch": {
+                "enabled": true,
+                "samplesPerSecond": 1
+            }
+        }
+    ]
+}

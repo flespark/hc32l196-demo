@@ -1,0 +1,21 @@
+{
+    // See http://go.microsoft.com/fwlink/?LinkId=827846
+    // for the documentation about the extensions.json format
+    "recommendations": [
+        "donjayamanne.githistory",
+        "llvm-vs-code-extensions.vscode-clangd",
+        "twxs.cmake",
+        "ms-vscode.cmake-tools",
+        "marus25.cortex-debug",
+        "EditorConfig.EditorConfig",
+        "jkearins.action-buttons-ext",
+        "dan-c-underwood.arm",
+    ],
+    "unwantedRecommendations": [
+        "ms-vscode.cpptools-extension-pack",
+        "espressif.esp-idf-extension",
+        "vadimcn.vscode-lldb",
+        "rust-lang.rust-analyzer",
+        "platformio.platformio-ide"
+    ]
+}

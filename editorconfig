@@ -1,0 +1,43 @@
+# See: https://github.com/editorconfig/editorconfig/wiki/EditorConfig-Properties
+root = true
+
+# editorconfig can not format existed text
+# use clangd as C formatter
+
+# [*.[ch]]
+# indent_style = space
+# indent_size = 4
+# max_line_length = 80
+# insert_final_newline = true
+# end_of_line = crlf
+# [*.{cpp,cxx}]
+# indent_style = space
+# indent_size = 4
+# max_line_length = 120
+# end_of_line = lf
+[*.py]
+indent_style = space
+indent_size = 4
+max_line_length = 120
+end_of_line = lf
+[*.{json,toml,yaml}]
+indent_style = space
+ident_size = 2
+end_of_line = lf
+[README.md]
+max_line_length = 80
+[CMakeLists.txt]
+indent_style = space
+indent_size = 4
+max_line_length = 120
+[*.sh]
+indent_style = tab
+table_width = 4
+[Makefile]
+indent_style = tab
+table_width = 4
+[*]
+charset = utf-8
+indent_style = table
+indent_size = 4
+trim_trailing_whitespace = true

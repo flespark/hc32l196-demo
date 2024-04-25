@@ -1,0 +1,6 @@
+si swd
+speed 4000
+device HC32L19X
+erase
+g
+q

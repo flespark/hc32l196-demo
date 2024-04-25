@@ -1,0 +1,14 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Flash firmware by jlink",
+			"type": "shell",
+			"command": "JRun.exe -device HC32L19X -if SWD -speed 4000 --quit ./build/hc32l196-demo.elf",
+			"options": {
+				"cwd": "${workspaceFolder}"
+			},
+            "problemMatcher": []
+		}
+	]
+}
