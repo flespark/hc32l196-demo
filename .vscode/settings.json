@@ -1,4 +1,7 @@
 {
+    "cmake.configureArgs": [
+        "-DPROJECT_NAME=${workspaceFolderBasename}"
+    ],
     "clangd.arguments": [
         "--query-driver=C:/Users/08607/scoop/apps/gcc-arm-none-eabi/current/bin",
         "--clang-tidy",
@@ -18,7 +21,7 @@
                 "singleInstance": true,
                 "focus": true,
                 "terminalName": "JLink Flash",
-                "command": "JLink.exe -CommanderScript ${workspaceFolder}/Device/flash_mcu.jlink",
+                "command": "JLink -CommanderScript ${workspaceFolder}/Device/flash_mcu.jlink",
             },
             {
                 "name": "↻Reset",
@@ -26,7 +29,7 @@
                 "singleInstance": true,
                 "focus": true,
                 "terminalName": "JLink Reset",
-                "command": "JLink.exe -CommanderScript ${workspaceFolder}/Device/reset_mcu.jlink",
+                "command": "JLink -CommanderScript ${workspaceFolder}/Device/reset_mcu.jlink",
             },
             {
                 "name": "♨Erase",
@@ -34,7 +37,7 @@
                 "singleInstance": true,
                 "focus": true,
                 "terminalName": "JLink Erase",
-                "command": "JLink.exe -CommanderScript ${workspaceFolder}/Device/erase_mcu.jlink",
+                "command": "JLink -CommanderScript ${workspaceFolder}/Device/erase_mcu.jlink",
             }
         ]
     }

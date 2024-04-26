@@ -5,8 +5,6 @@ cmake_minimum_required(VERSION 3.16)
 include(cmake/gcc-arm-none-eabi.cmake)
 include(cmake/flash.cmake)
 
-set(PROJECT_NAME hc32l196-demo)
-
 # Set project name and some defaults
 if ("${PROJECT_NAME}" STREQUAL "")
     set(PROJECT_NAME firmware)

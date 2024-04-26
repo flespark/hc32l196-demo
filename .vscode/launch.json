@@ -7,7 +7,7 @@
             // "showDevDebugOutput": "raw",
             "name": "jlink debug",
             "cwd": "${workspaceFolder}",
-            "executable": "${workspaceFolder}/build/hc32l196-demo.elf",
+            "executable": "${workspaceFolder}/build/${workspaceFolderBasename}.elf",
             "request": "launch",
             "type": "cortex-debug",
             "servertype": "jlink",
