@@ -10,6 +10,7 @@
         "EditorConfig.EditorConfig",
         "jkearins.action-buttons-ext",
         "dan-c-underwood.arm",
+        "akiramiyakoda.cppincludeguard",
     ],
     "unwantedRecommendations": [
         "ms-vscode.cpptools-extension-pack",

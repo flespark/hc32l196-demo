@@ -9,31 +9,36 @@
         // "--suggest-missing-includes",
         "--log=verbose"
     ],
+    "C/C++ Include Guard.Auto Include Guard Insertion For New File": true,
+    "C/C++ Include Guard.Macro Type": "Filename",
+    "C/C++ Include Guard.Prefix": "__",
+    "C/C++ Include Guard.Remove Extension": false,
+    "C/C++ Include Guard.Comment Style": "Block",
     "cortex-debug.variableUseNaturalFormat": false,
     // "terminal.integrated.gpuAcceleration": "canvas"
     "actionButtons": {
-        "defaultColor": "#ff0034",
+        "defaultColor": "orange",
         "reloadButton": null,
         "commands": [
             {
-                "name": "𐓏FLash",
-                "color": "white",
+                "name": "FLash",
+                "color": "red",
                 "singleInstance": true,
                 "focus": true,
                 "terminalName": "JLink Flash",
                 "command": "JLink -CommanderScript ${workspaceFolder}/Device/flash_mcu.jlink",
             },
             {
-                "name": "↻Reset",
-                "color": "white",
+                "name": "Reset",
+                "color": "green",
                 "singleInstance": true,
                 "focus": true,
                 "terminalName": "JLink Reset",
                 "command": "JLink -CommanderScript ${workspaceFolder}/Device/reset_mcu.jlink",
             },
             {
-                "name": "♨Erase",
-                "color": "white",
+                "name": "Erase",
+                "color": "yellow",
                 "singleInstance": true,
                 "focus": true,
                 "terminalName": "JLink Erase",

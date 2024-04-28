@@ -1,7 +1,7 @@
 // Configure debug launch settings
 {
     "version": "0.2.0",
-    "projectName": "asr6601-demo",
+    "projectName": "hc32l196-demo",
     "configurations": [
         {
             // "showDevDebugOutput": "raw",
@@ -17,7 +17,7 @@
             "svdPath": "${workspaceFolder}/Device/EWARM/HC32L19X.svd",
             "runToEntryPoint": "main",
             "overrideResetCommands": ["monitor reset halt"],
-            "gdbPath": "C:\\Program Files\\xpack-arm-none-eabi-gcc-13.2.1-1.1\\bin\\arm-none-eabi-gdb.exe",
+            // "gdbPath": "C:\\Program Files\\xpack-arm-none-eabi-gcc-13.2.1-1.1\\bin\\arm-none-eabi-gdb.exe",
             "liveWatch": {
                 "enabled": true,
                 "samplesPerSecond": 1

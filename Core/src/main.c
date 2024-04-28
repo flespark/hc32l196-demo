@@ -13,7 +13,7 @@
  *
  * @brief  Source file for GPIO example
  *
- * @author MADS Team 
+ * @author MADS Team
  *
  ******************************************************************************/
 
@@ -23,11 +23,38 @@
 #include "rtc.h"
 #include "gpio.h"
 #include "lpm.h"
-#include "board_stkhc32l19x.h"
+#include "lcd.h"
+#include <base_types.h>
+#include <ddl.h>
 /******************************************************************************
  * Local pre-processor symbols/macros ('#define')
  ******************************************************************************/
 
+/***************************************
+ *     LCD初始化定义和变量
+ ***************************************/
+#define SegA    0x100
+#define SegB    0x200
+#define SegC    0x400
+#define SegD    0x800
+#define SegE    0x004
+#define SegF    0x001
+#define SegG    0x002
+#define SegH    0x008
+#define DOT     0x008       //LCD_RAM1,LCDRAM0
+#define DOT2    0x80000     //LCD_RAM0
+
+
+#define Char_0  SegA|SegB|SegC|SegD|SegE|SegF
+#define Char_1  SegB|SegC
+#define Char_2  SegA|SegB|SegD|SegE|SegG
+#define Char_3  SegA|SegB|SegC|SegD|SegG
+#define Char_4  SegB|SegC|SegF|SegG
+#define Char_5  SegA|SegC|SegD|SegF|SegG
+#define Char_6  SegA|SegC|SegD|SegE|SegF|SegG
+#define Char_7  SegA|SegB|SegC
+#define Char_8  SegA|SegB|SegC|SegD|SegE|SegF|SegG
+#define Char_9  SegA|SegB|SegC|SegD|SegF|SegG
 /******************************************************************************
  * Global variable definitions (declared in header file with 'extern')
  ******************************************************************************/
@@ -35,14 +62,53 @@
 /******************************************************************************
  * Local type definitions ('typedef')
  ******************************************************************************/
+typedef struct {
+    en_gpio_port_t port;
+    en_gpio_pin_t pin;
+} gpio_id;
 
 /******************************************************************************
  * Local function prototypes ('static')
  ******************************************************************************/
-static uint8_t u8bFlag = 0,u8LedFlashCnt=0;
+static void Error_Handler(void);
+static void Clk_XtalCfg(void);
+static void App_LedInit(void);
+static void App_UserKeyInit(void);
+static void App_LowPowerModeGpioSet(void);
+static void UserKeyWait(void);
+static void App_RtcCfg(void);
+static void App_LcdCfg(void);
+static void LCD_TimeDisplay(void);
+static void LCD_ColonMask(void);
+
+
 /******************************************************************************
  * Local variable definitions ('static')                                      *
  ******************************************************************************/
+static uint8_t sys_stat = 0;
+
+static const gpio_id lcd_gpio[] = {
+    {GpioPortA, GpioPin9},  // COM0
+    {GpioPortA, GpioPin10}, // COM1
+    {GpioPortA, GpioPin11}, // COM2
+    {GpioPortA, GpioPin12}, // COM3
+
+    {GpioPortA, GpioPin8},  // SEG0
+    {GpioPortC, GpioPin9},  // SEG1
+    {GpioPortC, GpioPin8},  // SEG2
+    {GpioPortC, GpioPin7},  // SEG3
+    {GpioPortC, GpioPin6},  // SEG4
+    {GpioPortB, GpioPin15}, // SEG5
+    {GpioPortB, GpioPin14}, // SEG6
+    {GpioPortB, GpioPin13}, // SEG7
+    {GpioPortB, GpioPin3},  // VLCDH
+    {GpioPortB, GpioPin4},  // VLCD3
+    {GpioPortB, GpioPin5},  // VLCD2
+    {GpioPortB, GpioPin6},  // VLCD1
+};
+
+static volatile unsigned int Lcd_Table[10] = {
+    Char_0, Char_1, Char_2, Char_3, Char_4, Char_5, Char_6, Char_7, Char_8, Char_9};
 
 /******************************************************************************
  * Local pre-processor symbols/macros ('#define')
@@ -51,11 +117,6 @@ static uint8_t u8bFlag = 0,u8LedFlashCnt=0;
 /*****************************************************************************
  * Function implementation - global ('extern') and local ('static')
  ******************************************************************************/
-static void App_LedInit(void);
-static void App_UserKeyInit(void);
-static void App_LowPowerModeGpioSet(void);
-static void _UserKeyWait(void);
-static void App_RtcCfg(void);
 
 /**
  ******************************************************************************
@@ -66,234 +127,298 @@ static void App_RtcCfg(void);
  ** This sample
  **
  ******************************************************************************/
-int main(void)
+void Clk_XtalCfg(void)
 {
-  ///<外部低速初始化时钟配置(for LCD)
-  Sysctrl_XTLDriverCfg(SysctrlXtlAmp1, SysctrlXtalDriver1);
-  Sysctrl_SetXTLStableTime(SysctrlXtlStableCycle16384);
-  Sysctrl_ClkSourceEnable(SysctrlClkXTL,TRUE);
-	// ///< 使能RCL时钟
-	// Sysctrl_ClkSourceEnable(SysctrlClkRCL,TRUE); 
-	// ///< 配置内部低速时钟频率为32.768kHz
-	// Sysctrl_SetRCLTrim(SysctrlRclFreq32768);
-  // ///< 配置Demo板上所有不使用的IO,避免端口漏电
-	///配置RTC
-	App_RtcCfg();
-  App_LowPowerModeGpioSet();
-  ///< LED 端口初始化
-  App_LedInit();
-  ///< KEY 端口初始化
-  App_UserKeyInit();
-    
-  ///< ===============================================
-  ///< ============ 警告,警告,警告!!!=================
-  ///< ===============================================
-  ///< 本样例程序会进入深度休眠模式，因此以下两行代码起防护作用（防止进入深度
-  ///< 休眠后芯片调试功能不能再次使用），
-  ///< 在使用本样例时，禁止在没有唤醒机制的情况下删除以下两行代码。
-  delay1ms(2000);
-  _UserKeyWait();     ///< 等待按键按下后进入休眠模式
-     
-  ///< 打开并配置按键端口为下降沿中断
-  Gpio_EnableIrq(STK_USER_PORT, STK_USER_PIN, GpioIrqFalling);
-  EnableNvic(STK_USER_IRQn, IrqLevel3, TRUE);
-        
-  while(1)
-  {
-    if(u8bFlag) {
-      u8bFlag = 0;
-      u8LedFlashCnt = 10;
-      while(u8LedFlashCnt--) {
-        Gpio_SetIO(STK_LED_PORT, STK_LED_PIN); ///< LED点亮
-        delay1ms(100);
-        Gpio_ClrIO(STK_LED_PORT, STK_LED_PIN); ///< LED关闭
-        delay1ms(100);
-      }
-    }
-    Lpm_GotoDeepSleep(FALSE);                  ///< 进入低功耗模式——深度休眠(使能唤醒后退出中断执行执行该条语句后再此进入休眠)
-  }
+    // conifg XTAL input pin PC13 and PC14
+    // input
+    M0P_GPIO->PCDIR |= 0xc000;
+    // analogy mode
+    M0P_GPIO->PCADS |= 0xc000;
+    // no pull up
+    M0P_GPIO->PCPU &= ~0xc000;
+    // no pull down
+    M0P_GPIO->PCPD &= ~0xc000;
+    // driver current and driver strength
+    Sysctrl_XTLDriverCfg(SysctrlXtlAmp1, SysctrlXtalDriver1);
+    // waiting stable period
+    Sysctrl_SetXTLStableTime(SysctrlXtlStableCycle16384);
+    // enable
+    Sysctrl_ClkSourceEnable(SysctrlClkXTL, TRUE);
 }
 
+int main(void)
+{
+    App_LowPowerModeGpioSet();
+    ///< 配置XTAL
+    Clk_XtalCfg();
+    ///< 配置RTC
+    App_RtcCfg();
+    App_LcdCfg();                                          ///< LCD模块配置
 
+    Lcd_ClearDisp();             ///< 清屏
+    Lcd_WriteRam(0, 0x0f0f0f0f); ///< 赋值寄存器LCDRAM0
+    Lcd_WriteRam(1, 0x0f0f0f0f); ///< 赋值寄存器LCDRAM1
+
+    ///< LED 端口初始化
+    App_LedInit();
+    ///< KEY 端口初始化
+    App_UserKeyInit();
+
+    ///< ===============================================
+    ///< ============ 警告,警告,警告!!!=================
+    ///< ===============================================
+    ///< 本样例程序会进入深度休眠模式，因此以下两行代码起防护作用（防止进入深度
+    ///< 休眠后芯片调试功能不能再次使用），
+    ///< 在使用本样例时，禁止在没有唤醒机制的情况下删除以下两行代码。
+    delay1ms(200);
+    LCD_TimeDisplay();
+    // UserKeyWait(); ///< 等待按键按下后进入休眠模式
+
+    while (1) {
+        while (sys_stat == 0) {
+            Gpio_SetIO(STK_LED_PORT, STK_LED_PIN); ///< LED点亮
+            delay1ms(100);
+            Gpio_ClrIO(STK_LED_PORT, STK_LED_PIN); ///< LED关闭
+            delay1ms(100);
+        }
+        ///< 进入低功耗模式——深度休眠(使能唤醒后退出中断执行执行该条语句后再此进入休眠)
+        Lpm_GotoDeepSleep(FALSE);
+    }
+}
 
 ///< Port中断服务函数
 void PortGPIO_IRQHandler(void)
 {
-  if(TRUE == Gpio_GetIrqStatus(STK_USER_PORT, STK_USER_PIN))
-  {  
-    Gpio_ClearIrq(STK_USER_PORT, STK_USER_PIN); 
-    u8bFlag = 1;    
-  }
-}    
-
-
-static void _UserKeyWait(void)
-{    
-  while(1)
-  {
-    ///< 检测电平(USER按键是否按下(低电平))
-    if(FALSE == Gpio_GetInputIO(STK_USER_PORT, STK_USER_PIN))
-    {
-      break;
+    if (TRUE == Gpio_GetIrqStatus(STK_USER_PORT, STK_USER_PIN)) {
+        sys_stat = !sys_stat;
+        Gpio_ClearIrq(STK_USER_PORT, STK_USER_PIN);
+    } else {
+        Error_Handler();
     }
-    else
-    {
-      continue;
-    }
-  }
 }
 
+///< RTC闹钟和周期中断服务函数
+void Rtc_IRQHandler(void)
+{
+    static uint8_t count = 0;
+    if (TRUE == Rtc_GetAlmfItStatus()) {
+        Rtc_ClearAlmfItStatus();
+    } else if (TRUE == Rtc_GetPridItStatus()) {
+        count++;
+        if (count & 1) {
+            LCD_ColonMask();
+        } else {
+            LCD_TimeDisplay();
+        }
+        Rtc_ClearPrdfItStatus();
+    } else {
+        Error_Handler();
+    }
+}
+
+static void UserKeyWait(void)
+{
+    while (1) {
+        ///< 检测电平(USER按键是否按下(低电平))
+        if (FALSE == Gpio_GetInputIO(STK_USER_PORT, STK_USER_PIN)) {
+            break;
+        } else {
+            continue;
+        }
+    }
+}
 
 static void App_LowPowerModeGpioSet(void)
 {
-  ///< 打开GPIO外设时钟门控
-  M0P_SYSCTRL->PERI_CLKEN0_f.GPIO = 1;
-  
-  ///< swd as gpio
-//  Sysctrl_SetFunc(SysctrlSWDUseIOEn, TRUE);  ///< 不追求变态的功耗不建议把SWD设为GPIO口
-    
-  ///< 配置为数字端口
-  M0P_GPIO->PAADS = 0;
-  M0P_GPIO->PBADS = 0;
-  M0P_GPIO->PCADS = 0;
-  M0P_GPIO->PDADS = 0;
-  M0P_GPIO->PEADS = 0;
-  M0P_GPIO->PFADS = 0;
+    ///< 打开GPIO外设时钟门控
+    Sysctrl_SetPeripheralGate(SysctrlPeripheralGpio, TRUE);
 
-#if 0               ///< 配置为端口输出,此模式下最小系统功耗0.5uA
-  M0P_GPIO->PADIR = 0;
-  M0P_GPIO->PBDIR = 0;
-  M0P_GPIO->PCDIR = 0;
-  M0P_GPIO->PDDIR = 0;
-  M0P_GPIO->PEDIR = 0;
-  M0P_GPIO->PFDIR = 0;
-  ///< 配置IO口为无上下拉输出低
-  M0P_GPIO->PAOUT = 0;
-  M0P_GPIO->PBOUT = 0;
-  M0P_GPIO->PCOUT = 0;
-  M0P_GPIO->PDOUT = 0;
-  M0P_GPIO->PEOUT = 0;
-  M0P_GPIO->PFOUT = 0;
-  ///< 配置为输入无上拉
-  M0P_GPIO->PAPU = 0;
-  M0P_GPIO->PBPU = 0;
-  M0P_GPIO->PCPU = 0;
-  M0P_GPIO->PDPU = 0;
-  M0P_GPIO->PEPU = 0;
-  M0P_GPIO->PFPU = 0;
-  ///< 配置为输入无上拉
-  M0P_GPIO->PAPD = 0;
-  M0P_GPIO->PBPD = 0;
-  M0P_GPIO->PCPD = 0;
-  M0P_GPIO->PDPD = 0;
-  M0P_GPIO->PEPD = 0;
-  M0P_GPIO->PFPD = 0;
-    
-#else              ///< 配置为端口输入
-  M0P_GPIO->PADIR = 0XFFFF;
-  M0P_GPIO->PBDIR = 0XFFFF;
-  M0P_GPIO->PCDIR = 0XFFFF;
-  M0P_GPIO->PDDIR = 0XFFFF;
-  M0P_GPIO->PEDIR = 0XFFFF;
-  M0P_GPIO->PFDIR = 0XFFFF;
-  #if 0            ///<  IO口配成输入上拉无下拉模式一些芯片功耗71uA,不建议这种配置
-  ///< 配置为输入上拉
-  M0P_GPIO->PAPU = 0XFFFF;
-  M0P_GPIO->PBPU = 0XFFFF;
-  M0P_GPIO->PCPU = 0XFFFF;
-  M0P_GPIO->PDPU = 0XFFFF;
-  M0P_GPIO->PEPU = 0XFFFF;
-  M0P_GPIO->PFPU = 0XFFFF;
-    
-  ///< 输入无下拉
-  M0P_GPIO->PAPD = 0;
-  M0P_GPIO->PBPD = 0;
-  M0P_GPIO->PCPD = 0;
-  M0P_GPIO->PDPD = 0;
-  M0P_GPIO->PEPD = 0;
-  M0P_GPIO->PFPD = 0;
- #else                    ///<  此模式下最小系统功耗0.5uA
-   ///< 配置为输入无上拉
-  M0P_GPIO->PAPU = 0;
-  M0P_GPIO->PBPU = 0;
-  M0P_GPIO->PCPU = 0;
-  M0P_GPIO->PDPU = 0;
-  M0P_GPIO->PEPU = 0;
-  M0P_GPIO->PFPU = 0;
-  ///< 输入下拉
-  M0P_GPIO->PAPD = 0xFFFF;
-  M0P_GPIO->PBPD = 0xFFFF;
-  M0P_GPIO->PCPD = 0xFFFF;
-  M0P_GPIO->PDPD = 0xFFFF;
-  M0P_GPIO->PEPD = 0xFFFF;
-  M0P_GPIO->PFPD = 0xFFFF;
-  #endif  
-#endif
+    ///< swd as gpio
+    //  Sysctrl_SetFunc(SysctrlSWDUseIOEn, TRUE);  ///< 不追求变态的功耗不建议把SWD设为GPIO口
+
+    ///< 配置为数字端口
+    M0P_GPIO->PAADS = 0;
+    M0P_GPIO->PBADS = 0;
+    M0P_GPIO->PCADS = 0;
+    M0P_GPIO->PDADS = 0;
+    M0P_GPIO->PEADS = 0;
+    M0P_GPIO->PFADS = 0;
+
+    ///< 配置为端口输入
+    M0P_GPIO->PADIR = 0XFFFF;
+    M0P_GPIO->PBDIR = 0XFFFF;
+    M0P_GPIO->PCDIR = 0XFFFF;
+    M0P_GPIO->PDDIR = 0XFFFF;
+    M0P_GPIO->PEDIR = 0XFFFF;
+    M0P_GPIO->PFDIR = 0XFFFF;
+
+    ///< 配置为输入无上拉
+    M0P_GPIO->PAPU = 0;
+    M0P_GPIO->PBPU = 0;
+    M0P_GPIO->PCPU = 0;
+    M0P_GPIO->PDPU = 0;
+    M0P_GPIO->PEPU = 0;
+    M0P_GPIO->PFPU = 0;
+
+    ///< 输入下拉
+    M0P_GPIO->PAPD = 0xFFFF;
+    M0P_GPIO->PBPD = 0xFFFF;
+    M0P_GPIO->PCPD = 0xFFFF;
+    M0P_GPIO->PDPD = 0xFFFF;
+    M0P_GPIO->PEPD = 0xFFFF;
+    M0P_GPIO->PFPD = 0xFFFF;
 }
-    
+
 static void App_UserKeyInit(void)
 {
-  stc_gpio_cfg_t stcGpioCfg;
-    
-  ///< 打开GPIO外设时钟门控
-  Sysctrl_SetPeripheralGate(SysctrlPeripheralGpio, TRUE);
-    
-  ///< 端口方向配置->输入
-  stcGpioCfg.enDir = GpioDirIn;
-  ///< 端口驱动能力配置->高驱动能力
-  stcGpioCfg.enDrv = GpioDrvL;
-  ///< 端口上下拉配置->上拉
-  stcGpioCfg.enPu = GpioPuEnable;
-  stcGpioCfg.enPd = GpioPdDisable;
-  ///< 端口开漏输出配置->开漏输出关闭
-  stcGpioCfg.enOD = GpioOdDisable;
-  ///< 端口输入/输出值寄存器总线控制模式配置->AHB
-  stcGpioCfg.enCtrlMode = GpioAHB;
-  ///< GPIO IO USER KEY初始化
-  Gpio_Init(STK_USER_PORT, STK_USER_PIN, &stcGpioCfg);        
+    stc_gpio_cfg_t stcGpioCfg = {0};
 
+    ///< 打开GPIO外设时钟门控
+    Sysctrl_SetPeripheralGate(SysctrlPeripheralGpio, TRUE);
+
+    ///< 端口方向配置->输入
+    stcGpioCfg.enDir = GpioDirIn;
+    ///< 端口驱动能力配置->高驱动能力
+    stcGpioCfg.enDrv = GpioDrvL;
+    ///< 端口上下拉配置->上拉
+    stcGpioCfg.enPu = GpioPuEnable;
+    stcGpioCfg.enPd = GpioPdDisable;
+    ///< 端口开漏输出配置->开漏输出关闭
+    stcGpioCfg.enOD = GpioOdDisable;
+    ///< 端口输入/输出值寄存器总线控制模式配置->AHB
+    stcGpioCfg.enCtrlMode = GpioAHB;
+    ///< 打开并配置按键端口为下降沿中断
+    Gpio_EnableIrq(STK_USER_PORT, STK_USER_PIN, GpioIrqFalling);
+    EnableNvic(STK_USER_IRQn, IrqLevel3, TRUE);
+    ///< GPIO IO USER KEY初始化
+    Gpio_Init(STK_USER_PORT, STK_USER_PIN, &stcGpioCfg);
 }
 
 static void App_LedInit(void)
 {
-  stc_gpio_cfg_t stcGpioCfg;
-    
-  ///< 打开GPIO外设时钟门控
-  Sysctrl_SetPeripheralGate(SysctrlPeripheralGpio, TRUE);
-    
-  ///< 端口方向配置->输出(其它参数与以上（输入）配置参数一致)
-  stcGpioCfg.enDir = GpioDirOut;
-  ////< 端口上下拉配置->无
-  stcGpioCfg.enPu = GpioPuDisable;
-  stcGpioCfg.enPd = GpioPdDisable;
-  ///< GPIO IO LED端口初始化
-  Gpio_Init(STK_LED_PORT, STK_LED_PIN, &stcGpioCfg);
-  ///< LED关闭
-  Gpio_ClrIO(STK_LED_PORT, STK_LED_PIN);
+    stc_gpio_cfg_t stcGpioCfg = {0};
+
+    ///< 打开GPIO外设时钟门控
+    Sysctrl_SetPeripheralGate(SysctrlPeripheralGpio, TRUE);
+
+    ///< 端口方向配置->输出(其它参数与以上（输入）配置参数一致)
+    stcGpioCfg.enDir = GpioDirOut;
+    ////< 端口上下拉配置->无
+    stcGpioCfg.enPu = GpioPuDisable;
+    stcGpioCfg.enPd = GpioPdDisable;
+    ///< GPIO IO LED端口初始化
+    Gpio_Init(STK_LED_PORT, STK_LED_PIN, &stcGpioCfg);
+    ///< LED关闭
+    Gpio_ClrIO(STK_LED_PORT, STK_LED_PIN);
 }
 
 void App_RtcCfg(void)
 {
-    stc_rtc_initstruct_t RtcInitStruct;
-    Sysctrl_SetPeripheralGate(SysctrlPeripheralRtc,TRUE);//RTC模块时钟打开
-    RtcInitStruct.rtcAmpm = RtcPm;                       //24小时制
-    RtcInitStruct.rtcClksrc = RtcClkXtl;                 //外部低速时钟
-    RtcInitStruct.rtcPrdsel.rtcPrdsel = RtcPrdx;         //周期中断类型PRDX
-    RtcInitStruct.rtcPrdsel.rtcPrdx = 1u;                //周期中断时间间隔 1秒
-    RtcInitStruct.rtcTime.u8Second = 0x55;               //配置RTC时间
+    stc_rtc_initstruct_t RtcInitStruct = {0};
+    stc_rtc_cyccfg_t RtcCycleIrqType = {0};
+    Sysctrl_SetPeripheralGate(SysctrlPeripheralRtc, TRUE); // RTC模块时钟打开
+
+    RtcInitStruct.rtcAmpm = RtcPm;                         // 24小时制
+    RtcInitStruct.rtcClksrc = RtcClkXtl;                   // 外部低速时钟
+    RtcInitStruct.rtcPrdsel.rtcPrdsel = RtcPrdx;           // 周期中断类型PRDX
+    RtcInitStruct.rtcPrdsel.rtcPrdx = 1u;                  // 周期中断时间间隔 1秒
+    RtcInitStruct.rtcTime.u8Second = 0x55;                 // 配置RTC时间
     RtcInitStruct.rtcTime.u8Minute = 0x01;
-    RtcInitStruct.rtcTime.u8Hour   = 0x10;
-    RtcInitStruct.rtcTime.u8Day    = 0x17;
+    RtcInitStruct.rtcTime.u8Hour = 0x10;
+    RtcInitStruct.rtcTime.u8Day = 0x17;
     RtcInitStruct.rtcTime.u8DayOfWeek = 0x04;
-    RtcInitStruct.rtcTime.u8Month  = 0x04;
-    RtcInitStruct.rtcTime.u8Year   = 0x19;
-    RtcInitStruct.rtcCompen = RtcCompenEnable;           // 使能时钟误差补偿
-    RtcInitStruct.rtcCompValue = 0;                      //补偿值  根据实际情况进行补偿
+    RtcInitStruct.rtcTime.u8Month = 0x04;
+    RtcInitStruct.rtcTime.u8Year = 0x24;
+    RtcInitStruct.rtcCompen = RtcCompenEnable; // 使能时钟误差补偿
+    RtcInitStruct.rtcCompValue = 0;            // 补偿值  根据实际情况进行补偿
+
     Rtc_Init(&RtcInitStruct);
-    Rtc_AlmIeCmd(TRUE);                                  //使能闹钟中断
-    
-    // EnableNvic(RTC_IRQn, IrqLevel3, TRUE);               //使能RTC中断向量
-    Rtc_Cmd(TRUE);                                       //使能RTC开始计数
+    // Rtc_AlmIeCmd(TRUE); // 使能闹钟中断
+    RtcCycleIrqType.rtcPrdsel = RtcPrds;
+    RtcCycleIrqType.rtcPrds = Rtc05S;
+    Rtc_SetCyc(&RtcCycleIrqType); // 使能0.5s周期中断
+    EnableNvic(RTC_IRQn, IrqLevel3, TRUE); // 使能RTC中断向量
+    Rtc_Cmd(TRUE);                         // 使能RTC开始计数
+}
+
+void App_LcdCfg(void)
+{
+    stc_gpio_cfg_t stcGpioCfg = {0};
+    stc_lcd_cfg_t LcdInitStruct = {0};
+    stc_lcd_segcom_t LcdSegCom = {0};
+
+    ///< 打开GPIO外设时钟门控
+    Sysctrl_SetPeripheralGate(SysctrlPeripheralGpio, TRUE);
+
+    for (size_t i = 0; i < ARRAY_SZ(lcd_gpio); i++) {
+        stcGpioCfg.enDir = GpioDirIn;
+        stcGpioCfg.enPu = GpioPuDisable;
+        stcGpioCfg.enPd = GpioPdDisable;
+        stcGpioCfg.enCtrlMode = GpioAHB;
+        Gpio_Init(lcd_gpio[i].port, lcd_gpio[i].pin, &stcGpioCfg);
+        Gpio_SetAnalogMode(lcd_gpio[i].port, lcd_gpio[i].pin);
+    }
+
+    Sysctrl_SetPeripheralGate(SysctrlPeripheralLcd, TRUE); ///< 开启LCD时钟
+    LcdSegCom.u32Seg0_31 = 0xffffff00;                            ///< 配置LCD_POEN0寄存器 开启SEG0~SEG7
+    LcdSegCom.stc_seg32_51_com0_8_t.seg32_51_com0_8 = 0xffffffff; ///< 初始化LCD_POEN1寄存器 全部关闭输出端口
+    LcdSegCom.stc_seg32_51_com0_8_t.segcom_bit.Com0_3 = 0;        ///< 使能COM0~COM3
+    LcdSegCom.stc_seg32_51_com0_8_t.segcom_bit.Mux =
+        0; ///< Mux=0,Seg32_35=0,BSEL=1表示:选择外部电容工作模式，内部电阻断路
+    LcdSegCom.stc_seg32_51_com0_8_t.segcom_bit.Seg32_35 = 0;
+    Lcd_SetSegCom(&LcdSegCom); ///< LCD COMSEG端口配置
+
+    LcdInitStruct.LcdBiasSrc = LcdExtCap;   ///< 电容分压模式，需要外部电路配合
+    LcdInitStruct.LcdDuty = LcdDuty4;       ///< 1/4duty
+    LcdInitStruct.LcdBias = LcdBias3;       ///< 1/3 BIAS
+    LcdInitStruct.LcdCpClk = LcdClk2k;      ///< 电压泵时钟频率选择2kHz
+    LcdInitStruct.LcdScanClk = LcdClk128hz; ///< LCD扫描频率选择128Hz
+    LcdInitStruct.LcdMode = LcdMode0;       ///< 选择模式0
+    LcdInitStruct.LcdClkSrc = LcdXTL;       ///< LCD时钟选择RCL
+    LcdInitStruct.LcdEn = LcdEnable;        ///< 使能LCD模块
+    Lcd_Init(&LcdInitStruct);
+}
+
+void LCD_TimeDisplay(void)
+{
+    stc_rtc_time_t rtc_val;
+    if (Rtc_ReadDateTime(&rtc_val) != Ok) {
+        Error_Handler();
+    }
+    // display time number
+    M0P_LCD->RAM0 &= 0xffff0000;
+    M0P_LCD->RAM0 |= Lcd_Table[rtc_val.u8Hour >> 4];
+    M0P_LCD->RAM0 &= 0xffff;
+    M0P_LCD->RAM0 |= Lcd_Table[rtc_val.u8Hour & 0x0f] << 16;
+    M0P_LCD->RAM1 &= 0xffff0000;
+    M0P_LCD->RAM1 |= Lcd_Table[rtc_val.u8Minute >> 4];
+    M0P_LCD->RAM1 &= 0xffff;
+    M0P_LCD->RAM1 |= Lcd_Table[rtc_val.u8Minute & 0x0f] << 16;
+    // display colon
+    M0P_LCD->RAM0 |= 0x80000;
+}
+
+void LCD_ColonMask(void)
+{
+    // Mask colon
+    M0P_LCD->RAM0 &= ~0x80000;
+}
+
+
+/**
+  * @brief  This function is executed in case of error occurrence.
+  * @param  None
+  * @retval None
+  */
+void Error_Handler(void)
+{
+    /* USER CODE BEGIN Error_Handler */
+    /* User can add his own implementation to report the HAL error return state */
+    while(1)
+    {
+        Gpio_SetIO(STK_LED_PORT, STK_LED_PIN); ///< LED点亮
+    }
+    /* USER CODE END Error_Handler */
 }
 
 /******************************************************************************

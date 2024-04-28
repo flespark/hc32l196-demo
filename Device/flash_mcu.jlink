@@ -1,7 +1,7 @@
 si swd
 speed 4000
 device HC32L19X
-loadfile ./build/hc32l196-demo.bin 0x8000000
+loadfile ./build/hc32l196-demo.bin 0x0
 r
 g
 q
