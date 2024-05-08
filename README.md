@@ -1,13 +1,13 @@
 ### HC32L196 DEMO
 
-基于vscode的HC32L196开发环境，cmake作为构建工具，gcc作为编译器，jlink作为烧录调试工具，clangd作为代码索引和lint工具
+基于vscode的HC32L196开发环境，cmake作为构建工具，gcc作为编译器，jlink作为烧录调试工具，clangd作为代码索引和lint工具, ccache用于加快编译速度
 
 #### 如何使用
 
 1. 首先在系统上安装必需的开发工具，开源软件在Windows下建议使用[scoop](https://scoop.sh/#/)安装：
 
 ```
-scoop install vscode cmake ninja gcc-arm-none-eabi clangd
+scoop install vscode cmake ninja gcc-arm-none-eabi clangd ccache
 ```
 
 2. 安装jlink，使用工程中的配置文件`Device\HC32xxx_J-Flash.zip`，根据其中的说明文档修改jlink以添加对HC32支持。如果使用cmsis-dap调试，相关配置流程参照[如下](#part1)
@@ -28,7 +28,7 @@ pip install pyocd
 2. pyocd安装hc32l196支持的pack包(可能需要科学上网支持)：
 
 ```
-scoop pack install hc33L196
+scoop pack install HC32L196
 ```
 
 3. 将如下pyocd cortex-debug配置替换`.vscode/launch.json`中的相关jlink配置：
@@ -43,7 +43,7 @@ scoop pack install hc33L196
             "type": "cortex-debug",
             "servertype": "pyocd",
             "interface": "swd",
-            "targetId": "hc32l196",
+            "targetId": "HC32L196",
             "svdPath": "${workspaceFolder}/Device/EWARM/HC32L19X.svd",
             "runToEntryPoint": "main",
             "overrideResetCommands": ["monitor reset halt"]
@@ -54,26 +54,26 @@ scoop pack install hc33L196
 
 ```json
             {
-                "name": "𐓏FLash",
-                "color": "white",
+                "name": "Flash",
+                "color": "orange",
                 "singleInstance": true,
                 "focus": true,
                 "terminalName": "pyocd flash",
                 "command": "pyocd flash ${workspaceFolder}/build/${workspaceFolderBasename}.elf -t hc32l196",
             },
             {
-                "name": "↻Reset",
-                "color": "white",
+                "name": "Reset",
+                "color": "orange",
                 "singleInstance": true,
                 "focus": true,
                 "terminalName": "pyocd reset",
                 "command": "pyocd reset -t hc32l196",
             },
             {
-                "name": "♨Erase",
-                "color": "white",
+                "name": "Erase",
+                "color": "orange",
                 "singleInstance": true,
-                "focus": true, 
+                "focus": true,
                 "terminalName": "pyocd erase",
                 "command": "pyocd erase -t hc32l196 -c",
             }

@@ -1,0 +1,8 @@
+# probes:
+#     070000000671ff303631544157112257a5a5a5a597969908:
+#         target_override: hc32l196
+
+frequency: 1000000
+auto_unlock: true
+chip_erase: sector
+reset_type: sw_sysresetreq

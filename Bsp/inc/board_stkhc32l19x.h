@@ -13,15 +13,15 @@
  *
  * @brief  Header file for BSP functions
  *
- * @author MADS Team 
+ * @author MADS Team
  *
  ******************************************************************************/
-#ifndef __BOARD_STKHC32L19X_H__
-#define __BOARD_STKHC32L19X_H__
+#ifndef __BOARD_STKHC32L19X_H
+#define __BOARD_STKHC32L19X_H
 
 ///< STK GPIO DEFINE
 ///< USER KEY
-#if defined ( __HC32_HOLOSENSOR_ )
+#if defined ( __HC32_HOLOSENSOR__)
 #define STK_USER_PORT       GpioPortB
 #define STK_USER_PIN        GpioPin2
 #define STK_USER_IRQn       PORTB_IRQn
@@ -105,4 +105,4 @@
 #define STK_SPI1_MOSI_PORT    GpioPortB
 #define STK_SPI1_MOSI_PIN     GpioPin15
 
-#endif
+#endif /* __BOARD_STKHC32L19X_H */
