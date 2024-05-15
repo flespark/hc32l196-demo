@@ -21,7 +21,7 @@ message("Build type: ${CMAKE_BUILD_TYPE}")
 # Set microcontroller information
 SET(TARGET_PROCESSOR cortex-m0plus)
 set(MCU_FAMILY HC32L19X)
-set(MCU_MODEL HC32L19xMxxx)
+set(MCU_MODEL HC32L19xPxxx)
 set(CPU_PARAMETERS
     -mcpu=${TARGET_PROCESSOR}
     -mthumb
