@@ -1,0 +1,79 @@
+// Place your key bindings in this file to override the defaultsauto[]
+[
+    {
+        "key": "ctrl+shift+oem_2",
+        "command": "editor.action.blockComment",
+        "when": "editorTextFocus && !editorReadonly"
+    },
+    {
+        "key": "shift+alt+a",
+        "command": "-editor.action.blockComment",
+        "when": "editorTextFocus && !editorReadonly"
+    },
+    {
+        "key": "ctrl+shift+w",
+        "command": "-workbench.action.closeWindow"
+    },
+    {
+        "key": "f4",
+        "command": "-search.action.focusNextSearchResult",
+        "when": "hasSearchResult || inSearchEditor"
+    },
+    {
+        "key": "f4",
+        "command": "-goToNextReference",
+        "when": "inReferenceSearchEditor || referenceSearchVisible"
+    },
+    {
+        "key": "f4",
+        "command": "-references-view.next",
+        "when": "reference-list.hasResult && references-view.canNavigate"
+    },
+    {
+        "key": "f4",
+        "command": "cmake.build",
+        "when": "cmake:enableFullFeatureSet && !cmake:hideBuildCommand"
+    },
+    {
+        "key": "f7",
+        "command": "-cmake.build",
+        "when": "cmake:enableFullFeatureSet && !cmake:hideBuildCommand"
+    },
+    {
+        "key": "f7",
+        "command": "-editor.action.accessibleDiffViewer.next",
+        "when": "isInDiffEditor"
+    },
+    {
+        "key": "shift+f7",
+        "command": "-editor.action.accessibleDiffViewer.prev",
+        "when": "isInDiffEditor"
+    },
+    {
+        "key": "shift+f7",
+        "command": "-cmake.buildWithTarget",
+        "when": "cmake:enableFullFeatureSet && !cmake:hideBuildCommand"
+    },
+    {
+        "key": "f8",
+        "command": "-editor.action.marker.nextInFiles",
+        "when": "editorFocus"
+    },
+    {
+        "key": "alt+f8",
+        "command": "-editor.action.marker.next",
+        "when": "editorFocus"
+    },
+    {
+        "key": "f6",
+        "command": "extension.Flash",
+    },
+    {
+        "key": "f7",
+        "command": "extension.Reset",
+    },
+    {
+        "key": "f8",
+        "command": "extension.Erase",
+    }
+]

@@ -14,7 +14,7 @@ scoop install vscode cmake ninja gcc-arm-none-eabi clangd ccache
 
 3. 打开vscode打开工程目录，安装推荐的插件
 
-4. 调试器接到HC32L196的SWD调试接口，vscode下方状态栏中的Build，Flash，Reset，Erase对应编译，烧录，复位，擦除操作， 调试借助[cortex-debug](https://github.com/Marus/cortex-debug/wiki)插件
+4. 调试器接到HC32L196的SWD调试接口，vscode下方状态栏中的Build[F4]，Flash[F6]，Reset[F7]，Erase[F8]对应编译，烧录，复位，擦除操作， 调试[F5]借助[cortex-debug](https://github.com/Marus/cortex-debug/wiki)插件
 
 #### CMSIS-DAP调试支持 {#part1}
 
@@ -54,24 +54,21 @@ scoop pack install HC32L196
 
 ```json
             {
-                "name": "Flash",
-                "color": "orange",
+                "name": "$(zap)Flash",
                 "singleInstance": true,
                 "focus": true,
                 "terminalName": "pyocd flash",
                 "command": "pyocd flash ${workspaceFolder}/build/${workspaceFolderBasename}.elf -t hc32l196",
             },
             {
-                "name": "Reset",
-                "color": "orange",
+                "name": "$(debug-restart)Reset",
                 "singleInstance": true,
                 "focus": true,
                 "terminalName": "pyocd reset",
                 "command": "pyocd reset -t hc32l196",
             },
             {
-                "name": "Erase",
-                "color": "orange",
+                "name": "$(trash)Erase",
                 "singleInstance": true,
                 "focus": true,
                 "terminalName": "pyocd erase",

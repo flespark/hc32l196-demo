@@ -17,56 +17,30 @@
     "cortex-debug.variableUseNaturalFormat": false,
     // "terminal.integrated.gpuAcceleration": "canvas"
     "actionButtons": {
-        "defaultColor": "orange",
+        // available icon: https://code.visualstudio.com/api/references/icons-in-labels
+        // "defaultColor": "orange",
         "reloadButton": null,
         "commands": [
-            // {
-            //     "name": "FLash",
-            //     "color": "red",
-            //     "singleInstance": true,
-            //     "focus": true,
-            //     "terminalName": "JLink Flash",
-            //     "command": "JLink -CommanderScript ${workspaceFolder}/Device/flash_mcu.jlink",
-            // },
-            // {
-            //     "name": "Reset",
-            //     "color": "green",
-            //     "singleInstance": true,
-            //     "focus": true,
-            //     "terminalName": "JLink Reset",
-            //     "command": "JLink -CommanderScript ${workspaceFolder}/Device/reset_mcu.jlink",
-            // },
-            // {
-            //     "name": "Erase",
-            //     "color": "yellow",
-            //     "singleInstance": true,
-            //     "focus": true,
-            //     "terminalName": "JLink Erase",
-            //     "command": "JLink -CommanderScript ${workspaceFolder}/Device/erase_mcu.jlink",
-            // }
             {
-                "name": "Flash",
-                "color": "orange",
+                "name": "$(zap)Flash",
                 "singleInstance": true,
                 "focus": true,
-                "terminalName": "pyocd flash",
-                "command": "pyocd flash ${workspaceFolder}/build/${workspaceFolderBasename}.elf -t hc32l196",
+                "terminalName": "JLink Flash",
+                "command": "JLink -CommanderScript ${workspaceFolder}/Device/flash_mcu.jlink",
             },
             {
-                "name": "Reset",
-                "color": "orange",
+                "name": "$(debug-restart)Reset",
                 "singleInstance": true,
                 "focus": true,
-                "terminalName": "pyocd reset",
-                "command": "pyocd reset -t hc32l196",
+                "terminalName": "JLink Reset",
+                "command": "JLink -CommanderScript ${workspaceFolder}/Device/reset_mcu.jlink",
             },
             {
-                "name": "Erase",
-                "color": "orange",
+                "name": "$(trash)Erase",
                 "singleInstance": true,
                 "focus": true,
-                "terminalName": "pyocd erase",
-                "command": "pyocd erase -t hc32l196 -c",
+                "terminalName": "JLink Erase",
+                "command": "JLink -CommanderScript ${workspaceFolder}/Device/erase_mcu.jlink",
             }
         ]
     }
