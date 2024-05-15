@@ -21,6 +21,7 @@ message("Build type: ${CMAKE_BUILD_TYPE}")
 # Set microcontroller information
 SET(TARGET_PROCESSOR cortex-m0plus)
 set(MCU_FAMILY HC32L19X)
+set(MCU_MODEL HC32L19xMxxx)
 set(CPU_PARAMETERS
     -mcpu=${TARGET_PROCESSOR}
     -mthumb
@@ -65,6 +66,7 @@ target_precompile_headers(${EXECUTABLE} PRIVATE
 
 target_compile_definitions(${EXECUTABLE} PRIVATE
     $<$<CONFIG:Debug>:DEBUG>
+    ${MCU_MODEL}
     )
 
 target_include_directories(${EXECUTABLE} SYSTEM PRIVATE

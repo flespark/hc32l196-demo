@@ -237,12 +237,12 @@ static void App_LowPowerModeGpioSet(void)
     //  Sysctrl_SetFunc(SysctrlSWDUseIOEn, TRUE);  ///< 不追求变态的功耗不建议把SWD设为GPIO口
 
     ///< 配置为数字端口
-    M0P_GPIO->PAADS = 0;
-    M0P_GPIO->PBADS = 0;
-    M0P_GPIO->PCADS = 0;
-    M0P_GPIO->PDADS = 0;
-    M0P_GPIO->PEADS = 0;
-    M0P_GPIO->PFADS = 0;
+    M0P_GPIO->PAADS = 0xFFFF;
+    M0P_GPIO->PBADS = 0xFFFF;
+    M0P_GPIO->PCADS = 0xFFFF;
+    M0P_GPIO->PDADS = 0xFFFF;
+    M0P_GPIO->PEADS = 0xFFFF;
+    M0P_GPIO->PFADS = 0xFFFF;
 
     ///< 配置为端口输入
     M0P_GPIO->PADIR = 0XFFFF;

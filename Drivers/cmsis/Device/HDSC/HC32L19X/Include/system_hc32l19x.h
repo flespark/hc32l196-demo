@@ -13,7 +13,7 @@
  *
  * @brief  Header file for SYSTEM functions
  *
- * @author MADS Team 
+ * @author MADS Team
  *
  ******************************************************************************/
 
@@ -34,7 +34,8 @@ extern "C" {
 /******************************************************************************/
 #define HWWD_DISABLE        (1)
 
-#define HC32L19xPxxx           //100PIN
+/* defined in cmake */
+//#define HC32L19xPxxx           //100PIN
 //#define HC32L19xMxxx           //80PIN
 //#define HC32L19xKxxx           //64PIN
 //#define HC32L19xJxxx           //48PIN
@@ -45,7 +46,7 @@ extern "C" {
  ** \brief Clock Setup macro definition
  **
  ** - 0: CLOCK_SETTING_NONE  - User provides own clock setting in application
- ** - 1: CLOCK_SETTING_CMSIS - 
+ ** - 1: CLOCK_SETTING_CMSIS -
  ******************************************************************************/
 #define CLOCK_SETTING_NONE  0u
 #define CLOCK_SETTING_CMSIS 1u
