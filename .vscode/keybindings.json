@@ -66,14 +66,14 @@
     },
     {
         "key": "f6",
-        "command": "extension.Flash",
+        "command": "extension.$(zap)Flash",
     },
     {
         "key": "f7",
-        "command": "extension.Reset",
+        "command": "extension.$(debug-restart)Reset",
     },
     {
         "key": "f8",
-        "command": "extension.Erase",
+        "command": "extension.$(trash)Erase",
     }
 ]
