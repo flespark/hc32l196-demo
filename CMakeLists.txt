@@ -118,6 +118,12 @@ endif ()
 
 generateExtraOutput(${EXECUTABLE})
 
+if (WIN32)
 add_custom_command(TARGET ${EXECUTABLE}
    POST_BUILD
    COMMAND powershell -Command "Get-Date; Write-Output 'Build completed'")
+else ()
+add_custom_command(TARGET ${EXECUTABLE}
+   POST_BUILD
+   COMMAND date +"%X%t%D" && echo "Build completed")
+endif ()

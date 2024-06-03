@@ -10,6 +10,8 @@
 scoop install vscode cmake ninja gcc-arm-none-eabi clangd ccache
 ```
 
+​	Linux可能需要额外安装`arm-none-eabi-newlib`软件包
+
 2. 安装jlink，使用工程中的配置文件`Device\HC32xxx_J-Flash.zip`，根据其中的说明文档修改jlink以添加对HC32支持。如果使用cmsis-dap调试，相关配置流程参照[如下](#part1)
 
 3. 打开vscode打开工程目录，安装推荐的插件，复制`.vscode/keybindings.json`中的配置到vscode系统快捷键配置文件中
