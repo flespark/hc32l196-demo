@@ -67,6 +67,7 @@ target_precompile_headers(${EXECUTABLE} PRIVATE
 target_compile_definitions(${EXECUTABLE} PRIVATE
     $<$<CONFIG:Debug>:DEBUG>
     ${MCU_MODEL}
+    LOG_UART_USE_DMA
     )
 
 target_include_directories(${EXECUTABLE} SYSTEM PRIVATE
@@ -85,6 +86,12 @@ target_compile_options(${EXECUTABLE} PRIVATE
     -Wfatal-errors
     -fno-common
     -Wno-unused-parameter
+    # -fsingle-precision-constant
+    -fno-builtin-vprintf
+    -fno-builtin-vsnprintf
+    -fno-builtin-printf
+    -fno-builtin-sprintf
+    -fno-builtin-snprintf
     $<$<COMPILE_LANGUAGE:CXX>:
         -Wconversion
         -Wno-volatile
@@ -95,6 +102,11 @@ target_compile_options(${EXECUTABLE} PRIVATE
 target_link_options(${EXECUTABLE} PRIVATE
     -T${MCU_LINKER_SCRIPT}
     ${CPU_PARAMETERS}
+    -Wl,--wrap=vprintf
+    -Wl,--wrap=vsnprintf
+    -Wl,--wrap=printf
+    -Wl,--wrap=sprintf
+    -Wl,--wrap=snprintf
     -Wl,-Map=${CMAKE_PROJECT_NAME}.map
     -Wl,--print-memory-usage)
 
