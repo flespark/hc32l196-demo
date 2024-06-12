@@ -185,6 +185,7 @@ void printf_dma_done_irq_handle(void)
         printf_dma_busy = 0;
     } else {
         printf_dma_queue_pop(printf_dma_buf, &size);
+        Dma_SetTransferCnt(LOG_UART_DMA_CHANNEL, size);
         Dma_EnableChannel(LOG_UART_DMA_CHANNEL); // enable dma channel
     }
 }
