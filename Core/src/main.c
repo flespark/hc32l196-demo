@@ -133,6 +133,10 @@ void Clk_RchCfg(void)
     Sysctrl_SysClkSwitch(SysctrlClkRCH);
     ///< HCLK不超过24M：此处设置FLASH读等待周期为0 cycle
     Flash_WaitCycle(FlashWaitCycle1);
+    //< 关闭RCL减少功耗
+    Sysctrl_ClkSourceEnable(SysctrlClkRCL, FALSE);
+    //< 更新系统时钟频率
+    SystemCoreClockUpdate();
 }
 
 /**
