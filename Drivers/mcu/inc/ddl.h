@@ -13,7 +13,7 @@
  *
  * @brief  Header file for DDL functions
  *
- * @author MADS Team 
+ * @author MADS Team
  *
  ******************************************************************************/
 
@@ -124,9 +124,14 @@ uint32_t Log2(uint32_t u32Val);
  *******************************************************************************
  ** This hook is part of wait loops.
  ******************************************************************************/
+void ddl_init_tick(void);
+uint32_t ddl_get_tick(void);
+void ddl_suspend_tick(void);
+void ddl_resume_tick(void);
 void delay1ms(uint32_t u32Cnt);
 void delay100us(uint32_t u32Cnt);
 void delay10us(uint32_t u32Cnt);
+void delay1us(uint32_t u32Cnt);
 void SetBit(uint32_t addr, uint32_t offset, boolean_t bFlag);
 void ClrBit(uint32_t addr, uint32_t offset);
 boolean_t GetBit(uint32_t addr, uint32_t offset);

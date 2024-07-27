@@ -21,6 +21,7 @@
  * Include files
  ******************************************************************************/
 #include <base_types.h>
+#include <ddl.h>
 #include "printf-stdarg.h"
 #include "main.h"
 
@@ -121,10 +122,15 @@ void Clk_RchCfg(void)
 {
     ///< RCH时钟不同频率的切换，需要先将时钟切换到RCL
     Sysctrl_SetRCLTrim(SysctrlRclFreq32768);
+    ///< 设置RCL稳定时间
     Sysctrl_SetRCLStableTime(SysctrlRclStableCycle64);
+    ///< 使能RCL
     Sysctrl_ClkSourceEnable(SysctrlClkRCL, TRUE);
-    Sysctrl_SysClkSwitch(SysctrlClkRCL);
+    ///< 暂停SysTick中断
+    ddl_suspend_tick();
+    ///< 切换系统时钟到RCL
 
+    Sysctrl_SysClkSwitch(SysctrlClkRCL);
     ///< 加载目标频率的RCH的TRIM值
     Sysctrl_SetRCHTrim(SysctrlRchFreq24MHz);
     ///< 使能RCH
@@ -133,10 +139,14 @@ void Clk_RchCfg(void)
     Sysctrl_SysClkSwitch(SysctrlClkRCH);
     ///< HCLK不超过24M：此处设置FLASH读等待周期为0 cycle
     Flash_WaitCycle(FlashWaitCycle1);
-    //< 关闭RCL减少功耗
+    ///< 关闭RCL减少功耗
     Sysctrl_ClkSourceEnable(SysctrlClkRCL, FALSE);
-    //< 更新系统时钟频率
+    ///< 更新系统时钟频率
     SystemCoreClockUpdate();
+    ///< 重新配置SysTick
+	ddl_init_tick();
+    ///< 重新使能SysTick中断
+    ddl_resume_tick();
 }
 
 /**

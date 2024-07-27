@@ -13,7 +13,7 @@
  *
  * @brief  Source file for SYSCTRL functions
  *
- * @author MADS Team 
+ * @author MADS Team
  *
  ******************************************************************************/
 
@@ -62,7 +62,7 @@
 /*******************************************************************************
  * Global variable definitions (declared in header file with 'extern')
  ******************************************************************************/
-extern uint32_t SystemCoreClock;
+
 /*******************************************************************************
  * Local type definitions ('typedef')
  ******************************************************************************/
@@ -104,7 +104,7 @@ en_result_t Sysctrl_ClkSourceEnable(en_sysctrl_clk_source_t enSource, boolean_t 
 {
     en_result_t enRet = Ok;
     uint32_t u32Temp;
-    
+
     _SysctrlUnlock();
     bFlag = !!bFlag;
 
@@ -130,7 +130,7 @@ en_result_t Sysctrl_ClkSourceEnable(en_sysctrl_clk_source_t enSource, boolean_t 
             break;
 
         case SysctrlClkRCL:
-            
+
             M0P_SYSCTRL->SYSCTRL0_f.RCL_EN = bFlag;
             while(bFlag && (1 != M0P_SYSCTRL->RCL_CR_f.STABLE))
             {
@@ -164,7 +164,7 @@ en_result_t Sysctrl_ClkSourceEnable(en_sysctrl_clk_source_t enSource, boolean_t 
             break;
     }
     M0P_SYSCTRL->PERI_CLKEN0 = u32Temp;
-    
+
     return enRet;
 }
 

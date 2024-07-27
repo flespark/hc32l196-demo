@@ -66,7 +66,7 @@ extern "C" {
 /******************************************************************************/
 
 
-extern uint32_t SystemCoreClock;          // System Clock Frequency (Core Clock)
+extern volatile uint32_t SystemCoreClock;          // System Clock Frequency (Core Clock)
 extern void SystemInit (void);            // Initialize the system
 extern void SystemCoreClockUpdate (void); // Update SystemCoreClock variable
 

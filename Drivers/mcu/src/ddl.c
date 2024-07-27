@@ -13,7 +13,7 @@
  *
  * @brief  Source file for DDL functions
  *
- * @author MADS Team 
+ * @author MADS Team
  *
  ******************************************************************************/
 
@@ -51,26 +51,31 @@
 /******************************************************************************/
 /* Function implementation - global ('extern') and local ('static')           */
 /******************************************************************************/
-#ifndef __DEBUG
-#define __DEBUG
+#ifndef __DDL_C
+#define __DDL_C
 //#define __CC_ARM
-#endif
+#endif /* __DDL_C */
+
+#define DDL_TICK_FREQ_DEFAULT 1000
+#define DDL_TICK_IRQ_PRIORITY ((1 <<__NVIC_PRIO_BITS) - 1)
+
+__IO uint32_t uwTick;
 
 uint32_t Log2(uint32_t u32Val)
 {
     uint32_t u32V1 = 0;
-    
+
     if(0u == u32Val)
     {
         return 0;
     }
-    
+
     while(u32Val > 1u)
     {
         u32V1++;
         u32Val /=2;
     }
-    
+
     return u32V1;
 }
 
@@ -82,17 +87,42 @@ uint32_t Log2(uint32_t u32Val)
 void ddl_memclr(void *pu8Address, uint32_t u32Count)
 {
     uint8_t *pu8Addr = (uint8_t *)pu8Address;
-    
+
     if(NULL == pu8Addr)
     {
         return;
     }
-    
+
     while (u32Count--)
     {
         *pu8Addr++ = 0;
     }
 }
+
+void ddl_init_tick(void)
+{
+    SysTick_Config(SystemCoreClock / DDL_TICK_FREQ_DEFAULT);
+    NVIC_SetPriority(SysTick_IRQn, DDL_TICK_IRQ_PRIORITY);
+
+}
+
+uint32_t ddl_get_tick(void)
+{
+    return uwTick;
+}
+
+void ddl_suspend_tick(void)
+{
+    /* Disable SysTick Interrupt */
+    CLEAR_BIT(SysTick->CTRL, SysTick_CTRL_TICKINT_Msk);
+}
+
+void ddl_resume_tick(void)
+{
+    /* Enable SysTick Interrupt */
+    SET_BIT(SysTick->CTRL, SysTick_CTRL_TICKINT_Msk);
+}
+
 
 /**
  * \brief   delay1ms
@@ -102,23 +132,12 @@ void ddl_memclr(void *pu8Address, uint32_t u32Count)
  */
 void delay1ms(uint32_t u32Cnt)
 {
-    uint32_t u32end;
-    
-    SysTick->LOAD = 0xFFFFFF;
-    SysTick->VAL  = 0;
-    SysTick->CTRL = SysTick_CTRL_ENABLE_Msk | SysTick_CTRL_CLKSOURCE_Msk;
-    
-    while(u32Cnt-- > 0)
-    {
-        SysTick->VAL  = 0;
-        u32end = 0x1000000 - SystemCoreClock/1000;
-        while(SysTick->VAL > u32end)
-        {
-            ;
-        }
-    }
-    
-    SysTick->CTRL = (SysTick->CTRL & (~SysTick_CTRL_ENABLE_Msk));
+    uint32_t tickstart = ddl_get_tick();
+    uint32_t wait = u32Cnt;
+
+    wait++;
+
+    while ((ddl_get_tick() - tickstart) < wait);
 }
 
 /**
@@ -129,24 +148,7 @@ void delay1ms(uint32_t u32Cnt)
  */
 void delay100us(uint32_t u32Cnt)
 {
-    uint32_t u32end;
-    
-    SysTick->LOAD = 0xFFFFFF;
-    SysTick->VAL  = 0;
-    SysTick->CTRL = SysTick_CTRL_ENABLE_Msk | SysTick_CTRL_CLKSOURCE_Msk;
-    
-    while(u32Cnt-- > 0)
-    {
-        SysTick->VAL = 0;
-
-        u32end = 0x1000000 - SystemCoreClock/10000;
-        while(SysTick->VAL > u32end)
-        {
-            ;
-        }
-    }
-    
-    SysTick->CTRL = (SysTick->CTRL & (~SysTick_CTRL_ENABLE_Msk));
+    delay1ms(u32Cnt * 100);
 }
 
 /**
@@ -157,29 +159,34 @@ void delay100us(uint32_t u32Cnt)
  */
 void delay10us(uint32_t u32Cnt)
 {
-    uint32_t u32end;
-    
-    SysTick->LOAD = 0xFFFFFF;
-    SysTick->VAL  = 0;
-    SysTick->CTRL = SysTick_CTRL_ENABLE_Msk | SysTick_CTRL_CLKSOURCE_Msk;
-    
-    while(u32Cnt-- > 0)
-    {
-        SysTick->VAL = 0;
+    delay1us(u32Cnt * 10);
+}
 
-        u32end = 0x1000000 - SystemCoreClock/100000;
-        while(SysTick->VAL > u32end)
-        {
-            ;
-        }
+/**
+ * \brief   delay1us
+ *          delay approximately 1us.
+ * \param   [in]  u32Cnt
+ * \retval  void
+ */
+void delay1us(uint32_t u32Cnt)
+{
+    uint32_t last, now, reload, ticks, sub = 0;
+    last = SysTick->VAL;
+    reload = SysTick->LOAD;
+    ticks = SystemCoreClock / 1000000UL * u32Cnt;
+
+    while (ticks > sub)
+    {
+        ticks -= sub;
+        now = SysTick->VAL;
+        sub = last >= now ? last - now : reload + last - now;
+        last = now;
     }
-    
-    SysTick->CTRL = (SysTick->CTRL & (~SysTick_CTRL_ENABLE_Msk));
 }
 
 /**
  * \brief   set register bit
- *          
+ *
  * \param   [in]  addr
  * \param   [in]  offset
  * \retval  void
@@ -193,15 +200,15 @@ void SetBit(uint32_t addr, uint32_t offset, boolean_t bFlag)
     else
     {
         *((volatile uint32_t *)(addr)) &= (~(1UL<<(offset)));
-    }    
-    
-    
+    }
+
+
 }
 
 
 /**
  * \brief   get register bit
- *          
+ *
  * \param   [in]  addr
  * \param   [in]  offset
  * \retval  void
@@ -210,9 +217,16 @@ boolean_t GetBit(uint32_t addr, uint32_t offset)
 {
     return ((((*((volatile uint32_t *)(addr))) >> (offset)) & 1u) > 0) ? TRUE : FALSE;
 }
+
+
+void SysTick_IRQHandler(void)
+{
+    NVIC_ClearPendingIRQ(SysTick_IRQn);
+    uwTick++;
+}
+
 //@} // DDL Functions
 
 /******************************************************************************
  * EOF (not truncated)
  ******************************************************************************/
-
