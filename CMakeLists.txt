@@ -66,6 +66,7 @@ target_precompile_headers(${EXECUTABLE} PRIVATE
 
 target_compile_definitions(${EXECUTABLE} PRIVATE
     $<$<CONFIG:Debug>:DEBUG>
+    ${MCU_FAMILY}
     ${MCU_MODEL}
     LOG_UART_USE_DMA
     )
@@ -81,6 +82,7 @@ target_compile_options(${EXECUTABLE} PRIVATE
     # -Wpedantic
     -Wshadow
     -Wdouble-promotion
+    -fno-unroll-loops
     -Wformat=2 -Wformat-truncation
     -Wundef
     -Wfatal-errors
@@ -91,13 +93,7 @@ target_compile_options(${EXECUTABLE} PRIVATE
     -fno-builtin-vsnprintf
     -fno-builtin-printf
     -fno-builtin-sprintf
-    -fno-builtin-snprintf
-    $<$<COMPILE_LANGUAGE:CXX>:
-        -Wconversion
-        -Wno-volatile
-        -Wold-style-cast
-        -Wuseless-cast
-        -Wsuggest-override>)
+    -fno-builtin-snprintf)
 
 target_link_options(${EXECUTABLE} PRIVATE
     -T${MCU_LINKER_SCRIPT}

@@ -1,14 +1,45 @@
 {
+    "search.useIgnoreFiles": false,
+    "search.quickOpen.history.filterSortOrder": "recency",
+    "files.exclude": {
+        "**/.git": true,
+        "**/.svn": true,
+        "**/.hg": true,
+        "**/CVS": true,
+        "**/.DS_Store": true,
+        "**/Thumbs.db": true,
+        "**/node_modules": true,
+        "**/tmp": true,
+        "**/temp": true,
+        "**/AppData/Local/Temp": true
+    },
+    "search.exclude": {
+        "**/node_modules": true,
+        "**/bower_components": true,
+        "**/*.code-search": true,
+        "**/tmp": true,
+        "**/temp": true,
+        "**/AppData/Local/Temp": true,
+        "**/.cache": true,
+        "**/CMakeFiles": true,
+        "build/": true,
+        "test/": true,
+    },
     "cmake.generator": "Ninja",
     "cmake.configureArgs": [
         "-DPROJECT_NAME=${workspaceFolderBasename}"
     ],
     "clangd.arguments": [
-        "--query-driver=C:/Users/08607/scoop/apps/gcc-arm-none-eabi/current/bin",
+        "--log=verbose",
         "--clang-tidy",
+        "--pretty",
+        "--all-scopes-completion",
         "--completion-style=bundled",
-        // "--suggest-missing-includes",
-        "--log=verbose"
+        "--cross-file-rename",
+        "--header-insertion=iwyu",
+        "--header-insertion-decorators",
+        "--background-index",
+        "--compile-commands-dir=${workspaceFolder}/build",
     ],
     "C/C++ Include Guard.Auto Include Guard Insertion For New File": true,
     "C/C++ Include Guard.Macro Type": "Filename",
