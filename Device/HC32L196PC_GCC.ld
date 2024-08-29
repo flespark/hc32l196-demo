@@ -68,7 +68,7 @@ SECTIONS
  		*(SORT(.dtors.*))
  		*(.dtors)
 
-		*(.rodata*)
+		KEEP(*(.rodata*))
 
 		KEEP(*(.eh_frame*))
 	} > FLASH
