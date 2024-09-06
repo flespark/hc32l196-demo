@@ -129,7 +129,6 @@ uint32_t ddl_get_tick(void);
 void ddl_suspend_tick(void);
 void ddl_resume_tick(void);
 void delay1ms(uint32_t u32Cnt);
-void delay100us(uint32_t u32Cnt);
 void delay10us(uint32_t u32Cnt);
 void delay1us(uint32_t u32Cnt);
 void SetBit(uint32_t addr, uint32_t offset, boolean_t bFlag);

@@ -141,17 +141,6 @@ void delay1ms(uint32_t u32Cnt)
 }
 
 /**
- * \brief   delay100us
- *          delay approximately 100us.
- * \param   [in]  u32Cnt
- * \retval  void
- */
-void delay100us(uint32_t u32Cnt)
-{
-    delay1ms(u32Cnt * 100);
-}
-
-/**
  * \brief   delay10us
  *          delay approximately 10us.
  * \param   [in]  u32Cnt
