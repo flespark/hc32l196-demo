@@ -77,6 +77,7 @@ target_include_directories(${EXECUTABLE} SYSTEM PRIVATE
 ###############################################################################
 target_compile_options(${EXECUTABLE} PRIVATE
     ${CPU_PARAMETERS}
+    -ffile-prefix-map=${CMAKE_SOURCE_DIR}=.
     -Wall
     -Wextra
     # -Wpedantic
