@@ -22,6 +22,22 @@
                 "enabled": true,
                 "samplesPerSecond": 1
             }
+        },
+        {
+            "name": "jlink attach",
+            "cwd": "${workspaceFolder}",
+            "executable": "${workspaceFolder}/build/${workspaceFolderBasename}.elf",
+            "request": "attach",
+            "type": "cortex-debug",
+            "servertype": "jlink",
+            "serverpath": "C:/Program Files/SEGGER/JLink/JLinkGDBServerCL.exe",
+            "device": "HC32L19X",
+            "interface": "swd",
+            "svdPath": "${workspaceFolder}/Device/EWARM/HC32L19X.svd",
+            "liveWatch": {
+                "enabled": true,
+                "samplesPerSecond": 1
+            }
         }
     ]
 }
