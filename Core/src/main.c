@@ -24,6 +24,7 @@
 #include <ddl.h>
 #include "printf-stdarg.h"
 #include "main.h"
+#include "SEGGER_RTT.h"
 
 /******************************************************************************
  * Local pre-processor symbols/macros ('#define')
@@ -220,6 +221,7 @@ int main(void)
         }
         ///< 进入低功耗模式——深度休眠(使能唤醒后退出中断执行执行该条语句后再此进入休眠)
         Lpm_GotoDeepSleep(FALSE);
+        printf("wake\n");
     }
 }
 
