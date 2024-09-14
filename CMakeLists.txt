@@ -48,7 +48,7 @@ set(PROJECT_INCLUDE_DIRECTORIES
     ${CMAKE_CURRENT_SOURCE_DIR}/Drivers/cmsis/Include
     ${CMAKE_CURRENT_SOURCE_DIR}/Drivers/cmsis/Device/HDSC/${MCU_FAMILY}/Include
     ${CMAKE_CURRENT_SOURCE_DIR}/Drivers/mcu/inc
-    ${CMAKE_CURRENT_SOURCE_DIR}/Drivers/RTT
+    ${CMAKE_CURRENT_SOURCE_DIR}/Common
     ${CMAKE_CURRENT_SOURCE_DIR}/Bsp/inc
     )
 
@@ -56,7 +56,7 @@ file(GLOB_RECURSE PROJECT_SOURCES CONFIGURE_DEPENDS
     ${CMAKE_CURRENT_SOURCE_DIR}/Core/src/*.c
     ${CMAKE_CURRENT_SOURCE_DIR}/Drivers/cmsis/Device/HDSC/${MCU_FAMILY}/Source/*.c
     ${CMAKE_CURRENT_SOURCE_DIR}/Drivers/mcu/src/*.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/Drivers/RTT/*.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/Common/*.c
     )
 
 add_executable(${EXECUTABLE}
