@@ -22,9 +22,8 @@
  ******************************************************************************/
 #include <base_types.h>
 #include <ddl.h>
-#include "printf-stdarg.h"
 #include "main.h"
-#include "SEGGER_RTT.h"
+#include "printf.h"
 
 /******************************************************************************
  * Local pre-processor symbols/macros ('#define')
@@ -76,11 +75,15 @@ static void App_LedInit(void);
 static void App_UserKeyInit(void);
 static void UserKeyWait(void);
 static void App_RtcCfg(void);
-static void LOG_UartInit(void);
-static void LOG_UartDmaCfg(void);
 static void App_LcdCfg(void);
 static void LCD_TimeDisplay(void);
 static void LCD_ColonMask(void);
+#ifdef LOG_INTERFACE_USE_UART
+static void LOG_UartInit(void);
+#ifdef LOG_UART_USE_DMA
+static void LOG_UartDmaCfg(void);
+#endif /* LOG_UART_USE_DMA */
+#endif /* LOG_INTERFACE_USE_UART */
 
 
 /******************************************************************************
@@ -186,10 +189,12 @@ int main(void)
     Clk_XtalCfg();
     ///< 配置RTC
     App_RtcCfg();
+#ifdef LOG_INTERFACE_USE_UART
     LOG_UartInit();
 #ifdef LOG_UART_USE_DMA
     LOG_UartDmaCfg();
-#endif
+#endif /* LOG_UART_USE_DMA */
+#endif /* LOG_INTERFACE_USE_UART */
     printf("started\n");
     App_LcdCfg();                                          ///< LCD模块配置
 
@@ -210,7 +215,7 @@ int main(void)
     ///< 在使用本样例时，禁止在没有唤醒机制的情况下删除以下两行代码。
     delay1ms(200);
     LCD_TimeDisplay();
-    // UserKeyWait(); ///< 等待按键按下后进入休眠模式
+    UserKeyWait(); ///< 等待按键按下后进入休眠模式
 
     while (1) {
         while (sys_stat == 0) {
@@ -239,6 +244,7 @@ void PortGPIO_IRQHandler(void)
 ///< RTC闹钟和周期中断服务函数
 void Rtc_IRQHandler(void)
 {
+    printf("rtci");
     static uint8_t count = 0;
     if (TRUE == Rtc_GetAlmfItStatus()) {
         Rtc_ClearAlmfItStatus();
@@ -351,6 +357,7 @@ void App_RtcCfg(void)
     Rtc_Cmd(TRUE);                         // 使能RTC开始计数
 }
 
+#ifdef LOG_INTERFACE_USE_UART
 void LOG_UartInit(void)
 {
     stc_gpio_cfg_t GpioInitStruct = {0};
@@ -380,7 +387,9 @@ void LOG_UartInit(void)
     Uart_EnableFunc(LOG_UART_SEL, UartDmaTxFunc);
 #endif
 }
+#endif
 
+#ifdef LOG_UART_USE_DMA
 void LOG_UartDmaCfg(void)
 {
     stc_dma_cfg_t stcDmaCfg = {0};
@@ -407,6 +416,7 @@ void LOG_UartDmaCfg(void)
     Dma_EnableChannelIrq(LOG_UART_DMA_CHANNEL);
     EnableNvic(LOG_UART_DMA_IRQ, LOG_UART_DMA_IRQ_LEVEL, TRUE);
 }
+#endif
 
 void App_LcdCfg(void)
 {

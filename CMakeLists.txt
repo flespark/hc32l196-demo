@@ -1,7 +1,8 @@
-# STM32 Minimal CMake project for C/C++ projects
 cmake_minimum_required(VERSION 3.16)
-###############################################################################
 
+#---------------------------------------------------------------------------------------
+# Toolchain
+#---------------------------------------------------------------------------------------
 include(cmake/gcc-arm-none-eabi.cmake)
 include(cmake/flash.cmake)
 
@@ -18,6 +19,17 @@ if ("${CMAKE_BUILD_TYPE}" STREQUAL "")
 endif()
 message("Build type: ${CMAKE_BUILD_TYPE}")
 
+set(EXECUTABLE ${CMAKE_PROJECT_NAME})
+
+enable_language(C ASM)
+set(CMAKE_C_STANDARD 11)
+set(CMAKE_C_STANDARD_REQUIRED ON)
+set(CMAKE_C_EXTENSIONS ON)
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_STANDARD_INCLUDE_DIRECTORIES ${CMAKE_CXX_IMPLICIT_INCLUDE_DIRECTORIES})
+set(CMAKE_CXX_EXTENSIONS ON)
+
 # Set microcontroller information
 SET(TARGET_PROCESSOR cortex-m0plus)
 set(MCU_FAMILY HC32L19X)
@@ -30,18 +42,9 @@ set(CPU_PARAMETERS
 set(STARTUP_SCRIPT ${CMAKE_SOURCE_DIR}/Drivers/cmsis/Device/HDSC/${MCU_FAMILY}/Source/GCC/startup_hc32l19x.s)
 set(MCU_LINKER_SCRIPT ${CMAKE_SOURCE_DIR}/Device/HC32L196PC_GCC.ld)
 
-###############################################################################
-set(EXECUTABLE ${CMAKE_PROJECT_NAME})
-
-enable_language(C ASM)
-set(CMAKE_C_STANDARD 11)
-set(CMAKE_C_STANDARD_REQUIRED ON)
-set(CMAKE_C_EXTENSIONS ON)
-set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_STANDARD_INCLUDE_DIRECTORIES ${CMAKE_CXX_IMPLICIT_INCLUDE_DIRECTORIES})
-set(CMAKE_CXX_EXTENSIONS ON)
-###############################################################################
+#---------------------------------------------------------------------------------------
+# Source files
+#---------------------------------------------------------------------------------------
 
 set(PROJECT_INCLUDE_DIRECTORIES
     ${CMAKE_CURRENT_SOURCE_DIR}/Core/inc
@@ -56,7 +59,7 @@ file(GLOB_RECURSE PROJECT_SOURCES CONFIGURE_DEPENDS
     ${CMAKE_CURRENT_SOURCE_DIR}/Core/src/*.c
     ${CMAKE_CURRENT_SOURCE_DIR}/Drivers/cmsis/Device/HDSC/${MCU_FAMILY}/Source/*.c
     ${CMAKE_CURRENT_SOURCE_DIR}/Drivers/mcu/src/*.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/Common/*.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/Common/printf.c
     )
 
 add_executable(${EXECUTABLE}
@@ -70,13 +73,14 @@ target_compile_definitions(${EXECUTABLE} PRIVATE
     $<$<CONFIG:Debug>:DEBUG>
     ${MCU_FAMILY}
     ${MCU_MODEL}
-    LOG_UART_USE_DMA
     )
 
 target_include_directories(${EXECUTABLE} SYSTEM PRIVATE
     ${PROJECT_INCLUDE_DIRECTORIES})
 
-###############################################################################
+#---------------------------------------------------------------------------------------
+# Compile control
+#---------------------------------------------------------------------------------------
 target_compile_options(${EXECUTABLE} PRIVATE
     ${CPU_PARAMETERS}
     -ffile-prefix-map=${CMAKE_SOURCE_DIR}=.
@@ -109,10 +113,53 @@ target_link_options(${EXECUTABLE} PRIVATE
     -Wl,-Map=${CMAKE_PROJECT_NAME}.map
     -Wl,--print-memory-usage)
 
-target_link_libraries(${EXECUTABLE} c m)
+#---------------------------------------------------------------------------------------
+# Option
+#---------------------------------------------------------------------------------------
+# Allow switching of log interface
+set(LOG_INTERFACE_LIST none uart uart_dma rtt)
+set(LOG_INTERFACE uart CACHE STRING "Default log interface is uart")
+set_property(CACHE LOG_INTERFACE PROPERTY STRINGS ${LOG_INTERFACE_LIST})
+set_property(CACHE LOG_INTERFACE PROPERTY ADVANCED)
 
-###############################################################################
+if(${LOG_INTERFACE} STREQUAL none)
+    message(STATUS "Log interface use none")
+    target_compile_definitions(${EXECUTABLE} PRIVATE
+        LOG_INTERFACE_NONE
+    )
+elseif(${LOG_INTERFACE} STREQUAL uart)
+    message(STATUS "Log interface use UART")
+    target_compile_definitions(${EXECUTABLE} PRIVATE
+        LOG_INTERFACE_USE_UART
+    )
+    target_sources(${EXECUTABLE} PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/Common/printf-stdarg.c
+    )
+elseif(${LOG_INTERFACE} STREQUAL uart_dma)
+    message(STATUS "Log interface use UART with DMA")
+    target_compile_definitions(${EXECUTABLE} PRIVATE
+        LOG_INTERFACE_USE_UART
+        LOG_UART_USE_DMA
+    )
+    target_sources(${EXECUTABLE} PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/Common/printf-stdarg.c
+    )
+elseif(${LOG_INTERFACE} STREQUAL rtt)
+    message(STATUS "Log interface use RTT")
+    target_compile_definitions(${EXECUTABLE} PRIVATE
+        LOG_INTERFACE_USE_RTT
+    )
+    target_sources(${EXECUTABLE} PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/Common/SEGGER_RTT.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/Common/SEGGER_RTT_printf.c
+    )
+else()
+    message(FATAL_ERROR "Unsupported log interface selected...")
+endif()
 
+#---------------------------------------------------------------------------------------
+# Build type
+#---------------------------------------------------------------------------------------
 if ("${CMAKE_BUILD_TYPE}" STREQUAL "Release")
     message(STATUS "Maximum optimization for speed")
     target_compile_options(${EXECUTABLE} PRIVATE -Ofast)
