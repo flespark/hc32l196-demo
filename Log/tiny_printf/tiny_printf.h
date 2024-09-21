@@ -1,5 +1,5 @@
-#ifndef __PRINTF_STDARG_H
-#define __PRINTF_STDARG_H
+#ifndef __TINY_PRINTF_H
+#define __TINY_PRINTF_H
 
 #include <stdint.h>
 #include <stdbool.h>
@@ -26,4 +26,4 @@ void printf_dma_done_irq_handle(void);
 
 bool print_isdone(void);
 
-#endif /* __PRINTF_STDARG_H */
+#endif /* __TINY_PRINTF_H */

@@ -29,14 +29,14 @@
 //        malloc for printf (and may not be thread safe).
 //
 ///////////////////////////////////////////////////////////////////////////////
-#include "printf-stdarg.h"
-#include "main.h"
-#include <dmac.h>
+#include "tiny_printf.h"
 #include <stdarg.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <uart.h>
+#include <dmac.h>
+#include "main.h"
 
 // 'ntoa' conversion buffer size, this must be big enough to hold one converted
 // numeric number including padded zeros (dynamically created on stack)

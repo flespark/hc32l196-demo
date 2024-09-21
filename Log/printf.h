@@ -12,7 +12,7 @@ int __wrap_vprintf(const char *format, va_list ap);
 
 #elif defined(LOG_INTERFACE_USE_UART)
 
-#include "printf-stdarg.h"
+#include "tiny_printf.h"
 
 #endif /* LOG_INTERFACE */
 

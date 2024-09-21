@@ -51,15 +51,15 @@ set(PROJECT_INCLUDE_DIRECTORIES
     ${CMAKE_CURRENT_SOURCE_DIR}/Drivers/cmsis/Include
     ${CMAKE_CURRENT_SOURCE_DIR}/Drivers/cmsis/Device/HDSC/${MCU_FAMILY}/Include
     ${CMAKE_CURRENT_SOURCE_DIR}/Drivers/mcu/inc
-    ${CMAKE_CURRENT_SOURCE_DIR}/Common
     ${CMAKE_CURRENT_SOURCE_DIR}/Bsp/inc
+    ${CMAKE_CURRENT_SOURCE_DIR}/Log
     )
 
 file(GLOB_RECURSE PROJECT_SOURCES CONFIGURE_DEPENDS
     ${CMAKE_CURRENT_SOURCE_DIR}/Core/src/*.c
     ${CMAKE_CURRENT_SOURCE_DIR}/Drivers/cmsis/Device/HDSC/${MCU_FAMILY}/Source/*.c
     ${CMAKE_CURRENT_SOURCE_DIR}/Drivers/mcu/src/*.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/Common/printf.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/Log/printf.c
     )
 
 add_executable(${EXECUTABLE}
@@ -133,7 +133,10 @@ elseif(${LOG_INTERFACE} STREQUAL uart)
         LOG_INTERFACE_USE_UART
     )
     target_sources(${EXECUTABLE} PRIVATE
-        ${CMAKE_CURRENT_SOURCE_DIR}/Common/printf-stdarg.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/Log/tiny_printf/tiny_printf.c
+    )
+    target_include_directories(${EXECUTABLE} PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/Log/tiny_printf
     )
 elseif(${LOG_INTERFACE} STREQUAL uart_dma)
     message(STATUS "Log interface use UART with DMA")
@@ -142,7 +145,10 @@ elseif(${LOG_INTERFACE} STREQUAL uart_dma)
         LOG_UART_USE_DMA
     )
     target_sources(${EXECUTABLE} PRIVATE
-        ${CMAKE_CURRENT_SOURCE_DIR}/Common/printf-stdarg.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/Log/tiny_printf/tiny_printf.c
+    )
+    target_include_directories(${EXECUTABLE} PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/Log/tiny_printf
     )
 elseif(${LOG_INTERFACE} STREQUAL rtt)
     message(STATUS "Log interface use RTT")
@@ -150,8 +156,11 @@ elseif(${LOG_INTERFACE} STREQUAL rtt)
         LOG_INTERFACE_USE_RTT
     )
     target_sources(${EXECUTABLE} PRIVATE
-        ${CMAKE_CURRENT_SOURCE_DIR}/Common/SEGGER_RTT.c
-        ${CMAKE_CURRENT_SOURCE_DIR}/Common/SEGGER_RTT_printf.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/Log/segger_rtt/SEGGER_RTT.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/Log/segger_rtt/SEGGER_RTT_printf.c
+    )
+    target_include_directories(${EXECUTABLE} PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/Log/segger_rtt
     )
 else()
     message(FATAL_ERROR "Unsupported log interface selected...")
