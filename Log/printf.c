@@ -1,7 +1,14 @@
 #include <stdint.h>
 #include <stdarg.h>
+#include "hal_lpuart.h"
 
 #if defined(LOG_INTERFACE_NONE)
+
+void sys_log_init(void)
+{
+    return;
+}
+
 int __wrap_printf(const char *format, ...)
 {
     return 0;
@@ -27,9 +34,24 @@ int __wrap_vprintf(const char *format, va_list ap)
 // #error undef
 // }
 
+#elif defined(LOG_INTERFACE_USE_LPUART)
+
+void sys_log_init(void)
+{
+    Hal_UartInit();
+#ifdef LOG_LPUART_USE_DMA
+    Hal_UartDmaCfg();
+#endif
+}
+
 #elif defined(LOG_INTERFACE_USE_RTT)
 
 #include "SEGGER_RTT.h"
+
+void sys_log_init(void)
+{
+    return;
+}
 
 int __wrap_printf(const char *format, ...)
 {

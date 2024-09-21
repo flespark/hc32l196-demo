@@ -29,13 +29,14 @@
 //        malloc for printf (and may not be thread safe).
 //
 ///////////////////////////////////////////////////////////////////////////////
-#include "tiny_printf.h"
 #include <stdarg.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <uart.h>
 #include <dmac.h>
+#include "hal_lpuart.h"
+#include "tiny_printf.h"
 #include "main.h"
 
 // 'ntoa' conversion buffer size, this must be big enough to hold one converted
@@ -119,9 +120,8 @@ typedef struct {
     void *arg;
 } out_fct_wrap_type;
 
-#ifdef LOG_UART_USE_DMA
+#ifdef LOG_LPUART_USE_DMA
 static bool printf_dma_busy = 0;
-char printf_dma_buf[PRINTF_DMA_BUF_SIZE] = {0};
 
 char printf_dma_queue[PRINTF_DMA_QUEUE_SIZE] = {0};
 uint16_t printf_dma_idx_w = 0;
@@ -181,12 +181,12 @@ void printf_dma_done_irq_handle(void)
 
     if (printf_dma_idx_w == printf_dma_idx_r) {
         printf_dma_idx_w = printf_dma_idx_r = 0;
-        Dma_DisableChannel(LOG_UART_DMA_CHANNEL); // disable dma channel
+        Dma_DisableChannel(LOG_LPUART_DMA_CHANNEL); // disable dma channel
         printf_dma_busy = 0;
     } else {
         printf_dma_queue_pop(printf_dma_buf, &size);
-        Dma_SetTransferCnt(LOG_UART_DMA_CHANNEL, size);
-        Dma_EnableChannel(LOG_UART_DMA_CHANNEL); // enable dma channel
+        Dma_SetTransferCnt(LOG_LPUART_DMA_CHANNEL, size);
+        Dma_EnableChannel(LOG_LPUART_DMA_CHANNEL); // enable dma channel
     }
 }
 
@@ -198,8 +198,8 @@ static void printf_dma(void)
         __disable_irq();
         printf_dma_queue_pop(printf_dma_buf, &size);
         if (size > 0) {
-            Dma_SetTransferCnt(LOG_UART_DMA_CHANNEL, size);
-            Dma_EnableChannel(LOG_UART_DMA_CHANNEL); // enable dma channel
+            Dma_SetTransferCnt(LOG_LPUART_DMA_CHANNEL, size);
+            Dma_EnableChannel(LOG_LPUART_DMA_CHANNEL); // enable dma channel
             printf_dma_busy = 1;
         }
         __enable_irq();
@@ -209,14 +209,14 @@ static void printf_dma(void)
 
 bool print_isdone(void)
 {
-#ifdef LOG_UART_USE_DMA
+#ifdef LOG_LPUART_USE_DMA
     return (
         printf_dma_busy == 0                               // dma is idle
         && printf_dma_idx_w == printf_dma_idx_r            // and queue is empty
-        && Uart_GetStatus(LOG_UART_SEL, UartTxe) == TRUE); // and uart tx buf is empty
+        && Uart_GetStatus(LOG_LPUART_SEL, UartTxe) == TRUE); // and uart tx buf is empty
 #else
     // FIXME: maybe not accurate
-    return (Uart_GetStatus(LOG_UART_SEL, UartTxe) == TRUE); // and uart tx buf is empty
+    return (LPUart_GetStatus(LOG_LPUART_SEL, LPUartTxe) == TRUE); // and uart tx buf is empty
 #endif
 }
 
@@ -244,10 +244,10 @@ static inline void _out_char(char character, void *buffer, size_t idx, size_t ma
     (void)idx;
     (void)maxlen;
     if (character) {
-#ifdef LOG_UART_USE_DMA
+#ifdef LOG_LPUART_USE_DMA
         printf_dma_queue_push(character);
 #else
-        Uart_SendDataPoll(LOG_UART_SEL, character);
+        LPUart_SendData(LOG_LPUART_SEL, character);
 #endif
     }
 }
@@ -1087,7 +1087,7 @@ int __wrap_printf(const char *format, ...)
     const int ret = _vsnprintf(_out_char, buffer, (size_t)-1, format, va);
     va_end(va);
 
-#ifdef LOG_UART_USE_DMA
+#ifdef LOG_LPUART_USE_DMA
     printf_dma();
 #endif
     return ret;

@@ -73,17 +73,10 @@ static void Clk_RchCfg(void);
 static void Clk_XtalCfg(void);
 static void App_LedInit(void);
 static void App_UserKeyInit(void);
-static void UserKeyWait(void);
 static void App_RtcCfg(void);
 static void App_LcdCfg(void);
 static void LCD_TimeDisplay(void);
 static void LCD_ColonMask(void);
-#ifdef LOG_INTERFACE_USE_UART
-static void LOG_UartInit(void);
-#ifdef LOG_UART_USE_DMA
-static void LOG_UartDmaCfg(void);
-#endif /* LOG_UART_USE_DMA */
-#endif /* LOG_INTERFACE_USE_UART */
 
 
 /******************************************************************************
@@ -188,16 +181,10 @@ int main(void)
     ///< 配置XTAL
     Clk_XtalCfg();
     ///< 配置RTC
+    sys_log_init();
     App_RtcCfg();
-#ifdef LOG_INTERFACE_USE_UART
-    LOG_UartInit();
-#ifdef LOG_UART_USE_DMA
-    LOG_UartDmaCfg();
-#endif /* LOG_UART_USE_DMA */
-#endif /* LOG_INTERFACE_USE_UART */
     printf("started\n");
     App_LcdCfg();                                          ///< LCD模块配置
-
     Lcd_ClearDisp();             ///< 清屏
     Lcd_WriteRam(0, 0x0f0f0f0f); ///< 赋值寄存器LCDRAM0
     Lcd_WriteRam(1, 0x0f0f0f0f); ///< 赋值寄存器LCDRAM1
@@ -215,7 +202,6 @@ int main(void)
     ///< 在使用本样例时，禁止在没有唤醒机制的情况下删除以下两行代码。
     delay1ms(200);
     LCD_TimeDisplay();
-    UserKeyWait(); ///< 等待按键按下后进入休眠模式
 
     while (1) {
         while (sys_stat == 0) {
@@ -244,7 +230,6 @@ void PortGPIO_IRQHandler(void)
 ///< RTC闹钟和周期中断服务函数
 void Rtc_IRQHandler(void)
 {
-    printf("rtci");
     static uint8_t count = 0;
     if (TRUE == Rtc_GetAlmfItStatus()) {
         Rtc_ClearAlmfItStatus();
@@ -263,26 +248,14 @@ void Rtc_IRQHandler(void)
 
 void Dmac_IRQHandler(void)
 {
-#ifdef LOG_UART_USE_DMA
-    if (Dma_GetStat(LOG_UART_DMA_CHANNEL) == DmaTransferComplete) {
-        Dma_ClrStat(LOG_UART_DMA_CHANNEL);
+#ifdef LOG_LPUART_USE_DMA
+    if (Dma_GetStat(LOG_LPUART_DMA_CHANNEL) == DmaTransferComplete) {
+        Dma_ClrStat(LOG_LPUART_DMA_CHANNEL);
         printf_dma_done_irq_handle();
     } else {
         Error_Handler();
     }
 #endif
-}
-
-static void UserKeyWait(void)
-{
-    while (1) {
-        ///< 检测电平(USER按键是否按下(低电平))
-        if (FALSE == Gpio_GetInputIO(STK_USER_PORT, STK_USER_PIN)) {
-            break;
-        } else {
-            continue;
-        }
-    }
 }
 
 static void App_UserKeyInit(void)
@@ -357,66 +330,6 @@ void App_RtcCfg(void)
     Rtc_Cmd(TRUE);                         // 使能RTC开始计数
 }
 
-#ifdef LOG_INTERFACE_USE_UART
-void LOG_UartInit(void)
-{
-    stc_gpio_cfg_t GpioInitStruct = {0};
-    stc_uart_cfg_t  stcCfg = {0};
-
-    Sysctrl_SetPeripheralGate(SysctrlPeripheralGpio, TRUE);
-
-    GpioInitStruct.enDir = GpioDirOut;
-    GpioInitStruct.enPu = GpioPuEnable;
-
-    Gpio_Init(LOG_TX_Port, LOG_TX_Pin, &GpioInitStruct);
-    Gpio_SetAfMode(LOG_TX_Port, LOG_TX_Pin, LOG_UART_AF);
-
-    Sysctrl_SetPeripheralGate(LOG_UART_CLOCK, TRUE);
-
-    ///< UART Init
-    stcCfg.enRunMode = UartMskMode1;
-    stcCfg.enStopBit = UartMsk1bit;
-    stcCfg.enMmdorCk = UartMskDataOrAddr;
-    stcCfg.stcBaud.u32Baud = LOG_UART_BAUDRATE;
-    stcCfg.stcBaud.enClkDiv = UartMsk8Or16Div;
-    stcCfg.stcBaud.u32Pclk = Sysctrl_GetPClkFreq();
-    Uart_Init(LOG_UART_SEL, &stcCfg);
-
-#ifdef LOG_UART_USE_DMA
-    Uart_ClrStatus(LOG_UART_SEL, UartTC);
-    Uart_EnableFunc(LOG_UART_SEL, UartDmaTxFunc);
-#endif
-}
-#endif
-
-#ifdef LOG_UART_USE_DMA
-void LOG_UartDmaCfg(void)
-{
-    stc_dma_cfg_t stcDmaCfg = {0};
-
-    Sysctrl_SetPeripheralGate(SysctrlPeripheralDma,TRUE);      //使能DMAC外设时钟门控开关
-
-    stcDmaCfg.u32SrcAddress = (uint32_t)(printf_dma_buf);      // 接收数据缓存
-    stcDmaCfg.u32DstAddress = (uint32_t)&LOG_UART_SEL->SBUF;   // 发送数据寄存器地址
-    stcDmaCfg.enSrcAddrReloadCtl = DmaMskSrcAddrReloadEnable;  // 使能DMA源地址重载
-    stcDmaCfg.enSrcBcTcReloadCtl = DmaMskBcTcReloadEnable;     // 使能BC[3:0]和CONFA:TC[15:0]的重载功能
-    stcDmaCfg.enDestAddrReloadCtl = DmaMskDstAddrReloadEnable; // 使能DMA目的地址重载
-    stcDmaCfg.enTransferMode = DmaMskOneTransfer;              // 一次传输，DMAC传输完成时清除CONFA:ENS位
-    stcDmaCfg.enDstAddrMode = DmaMskDstAddrFix;                // 目的地址固定
-    stcDmaCfg.enSrcAddrMode = DmaMskSrcAddrInc;                // 源地址自增
-    stcDmaCfg.u16BlockSize = LOG_UART_DMA_WIDTH;               // 块传输个数
-    stcDmaCfg.u16TransferCnt = 1;                              // 块传输次数，一次传输一个字节
-    stcDmaCfg.enMode = DmaMskBlock;                            // 块(Block)传输
-    stcDmaCfg.enTransferWidth = DmaMsk8Bit;                    // 8 bit  字节传输
-    stcDmaCfg.enRequestNum = LOG_UART_DMA_TRIG;                // DMA硬件触发源位Uart1Tx
-    stcDmaCfg.enPriority = DmaMskPriorityFix;                  // DMA 各通道优先级固定 (CH0>CH1)
-
-    Dma_Enable();
-    Dma_InitChannel(LOG_UART_DMA_CHANNEL, &stcDmaCfg); // DMA通道1初始化
-    Dma_EnableChannelIrq(LOG_UART_DMA_CHANNEL);
-    EnableNvic(LOG_UART_DMA_IRQ, LOG_UART_DMA_IRQ_LEVEL, TRUE);
-}
-#endif
 
 void App_LcdCfg(void)
 {

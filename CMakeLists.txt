@@ -130,10 +130,11 @@ if(${LOG_INTERFACE} STREQUAL none)
 elseif(${LOG_INTERFACE} STREQUAL uart)
     message(STATUS "Log interface use UART")
     target_compile_definitions(${EXECUTABLE} PRIVATE
-        LOG_INTERFACE_USE_UART
+        LOG_INTERFACE_USE_LPUART
     )
     target_sources(${EXECUTABLE} PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/Log/tiny_printf/tiny_printf.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/Log/hal_lpuart.c
     )
     target_include_directories(${EXECUTABLE} PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/Log/tiny_printf
@@ -141,11 +142,12 @@ elseif(${LOG_INTERFACE} STREQUAL uart)
 elseif(${LOG_INTERFACE} STREQUAL uart_dma)
     message(STATUS "Log interface use UART with DMA")
     target_compile_definitions(${EXECUTABLE} PRIVATE
-        LOG_INTERFACE_USE_UART
-        LOG_UART_USE_DMA
+        LOG_INTERFACE_USE_LPUART
+        LOG_LPUART_USE_DMA
     )
     target_sources(${EXECUTABLE} PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/Log/tiny_printf/tiny_printf.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/Log/hal_lpuart.c
     )
     target_include_directories(${EXECUTABLE} PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/Log/tiny_printf
