@@ -44,6 +44,8 @@ extern "C"
 #define DEC2BCD(x)                  ((((x)/10)<<4) + ((x)%10))
 #define BCD2DEC(x)                  ((((x)>>4)*10) + ((x)&0x0F))
 
+#define BIT(x)                (1 << (x))
+
 #define SET_BIT(REG, BIT)     ((REG) |= (BIT))
 
 #define CLEAR_BIT(REG, BIT)   ((REG) &= ~(BIT))

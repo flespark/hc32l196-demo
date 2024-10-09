@@ -49,6 +49,10 @@ SECTIONS
 	.text :
 	{
 		KEEP(*(.vectors))
+        . = ALIGN(4);
+		KEEP(*(.privilege_code*))
+        . = ALIGN(4);
+
 		*(.text*)
 
 		KEEP(*(.init))
