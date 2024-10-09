@@ -38,7 +38,7 @@ pyocd pack install HC32L196
             // "showDevDebugOutput": "raw",
             "name": "pyocd debug",
             "cwd": "${workspaceFolder}",
-            "executable": "${workspaceFolder}/build/${workspaceFolderBasename}.elf",
+            "executable": "${workspaceFolder}/build/hc32l196-demo.elf",
             "request": "launch",
             "type": "cortex-debug",
             "servertype": "pyocd",
@@ -58,7 +58,7 @@ pyocd pack install HC32L196
                 "singleInstance": true,
                 "focus": true,
                 "terminalName": "pyocd flash",
-                "command": "pyocd flash ${workspaceFolder}/build/${workspaceFolderBasename}.elf -t hc32l196",
+                "command": "pyocd flash ${workspaceFolder}/build/hc32l196-demo.elf -t hc32l196",
             },
             {
                 "name": "$(debug-restart)Reset",

@@ -7,7 +7,7 @@
             // "showDevDebugOutput": "raw",
             "name": "jlink debug",
             "cwd": "${workspaceFolder}",
-            "executable": "${workspaceFolder}/build/${workspaceFolderBasename}.elf",
+            "executable": "${workspaceFolder}/build/hc32l196-demo.elf",
             "request": "launch",
             "type": "cortex-debug",
             "servertype": "jlink",
@@ -26,7 +26,7 @@
         {
             "name": "jlink attach",
             "cwd": "${workspaceFolder}",
-            "executable": "${workspaceFolder}/build/${workspaceFolderBasename}.elf",
+            "executable": "${workspaceFolder}/build/hc32l196-demo.elf",
             "request": "attach",
             "type": "cortex-debug",
             "servertype": "jlink",
