@@ -26,7 +26,7 @@
         "test/": true,
     },
     "cmake.configureArgs": [
-        "-DPROJECT_NAME=${workspaceFolderBasename}"
+        "-DPROJECT_NAME=hc32l196-demo"
     ],
     "clangd.arguments": [
         "--log=verbose",

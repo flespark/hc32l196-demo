@@ -15,7 +15,7 @@
             "inherits": "default",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Debug",
-                "LOG_INTERFACE": "rtt"
+                "LOG_INTERFACE": "uart"
             }
         },
         {
