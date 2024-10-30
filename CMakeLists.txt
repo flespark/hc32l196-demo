@@ -22,7 +22,7 @@ message("Build type: ${CMAKE_BUILD_TYPE}")
 set(EXECUTABLE ${CMAKE_PROJECT_NAME})
 
 enable_language(C ASM)
-set(CMAKE_C_STANDARD 11)
+set(CMAKE_C_STANDARD 17)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_C_EXTENSIONS ON)
 set(CMAKE_CXX_STANDARD 20)
@@ -53,13 +53,17 @@ set(PROJECT_INCLUDE_DIRECTORIES
     ${CMAKE_CURRENT_SOURCE_DIR}/Drivers/mcu/inc
     ${CMAKE_CURRENT_SOURCE_DIR}/Bsp/inc
     ${CMAKE_CURRENT_SOURCE_DIR}/Log
+    ${CMAKE_CURRENT_SOURCE_DIR}/Log/segger_rtt
+    ${CMAKE_CURRENT_SOURCE_DIR}/Log/tiny_printf
     )
 
 file(GLOB_RECURSE PROJECT_SOURCES CONFIGURE_DEPENDS
     ${CMAKE_CURRENT_SOURCE_DIR}/Core/src/*.c
     ${CMAKE_CURRENT_SOURCE_DIR}/Drivers/cmsis/Device/HDSC/${MCU_FAMILY}/Source/*.c
     ${CMAKE_CURRENT_SOURCE_DIR}/Drivers/mcu/src/*.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/Log/printf.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/Log/*.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/Log/segger_rtt/*.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/Log/tiny_printf/*.c
     )
 
 add_executable(${EXECUTABLE}
@@ -123,50 +127,28 @@ set_property(CACHE LOG_INTERFACE PROPERTY STRINGS ${LOG_INTERFACE_LIST})
 set_property(CACHE LOG_INTERFACE PROPERTY ADVANCED)
 
 if(${LOG_INTERFACE} STREQUAL none)
-    message(STATUS "Log interface use none")
+    message(STATUS "Log not enabled")
     target_compile_definitions(${EXECUTABLE} PRIVATE
-        LOG_INTERFACE_NONE
     )
 elseif(${LOG_INTERFACE} STREQUAL uart)
     message(STATUS "Log interface use UART")
     target_compile_definitions(${EXECUTABLE} PRIVATE
-        LOG_INTERFACE_USE_LPUART
-    )
-    target_sources(${EXECUTABLE} PRIVATE
-        ${CMAKE_CURRENT_SOURCE_DIR}/Log/tiny_printf/tiny_printf.c
-        ${CMAKE_CURRENT_SOURCE_DIR}/Log/hal_lpuart.c
-    )
-    target_include_directories(${EXECUTABLE} PRIVATE
-        ${CMAKE_CURRENT_SOURCE_DIR}/Log/tiny_printf
+        LOG_USING_LPUART
     )
 elseif(${LOG_INTERFACE} STREQUAL uart_dma)
     message(STATUS "Log interface use UART with DMA")
     target_compile_definitions(${EXECUTABLE} PRIVATE
-        LOG_INTERFACE_USE_LPUART
-        LOG_LPUART_USE_DMA
-    )
-    target_sources(${EXECUTABLE} PRIVATE
-        ${CMAKE_CURRENT_SOURCE_DIR}/Log/tiny_printf/tiny_printf.c
-        ${CMAKE_CURRENT_SOURCE_DIR}/Log/hal_lpuart.c
-    )
-    target_include_directories(${EXECUTABLE} PRIVATE
-        ${CMAKE_CURRENT_SOURCE_DIR}/Log/tiny_printf
+        LOG_USING_LPUART_DMA
     )
 elseif(${LOG_INTERFACE} STREQUAL rtt)
-    message(STATUS "Log interface use RTT")
+    message(STATUS "Log interface use RTT, NOTICE: RTT will wake MCU from low power")
     target_compile_definitions(${EXECUTABLE} PRIVATE
-        LOG_INTERFACE_USE_RTT
-    )
-    target_sources(${EXECUTABLE} PRIVATE
-        ${CMAKE_CURRENT_SOURCE_DIR}/Log/segger_rtt/SEGGER_RTT.c
-        ${CMAKE_CURRENT_SOURCE_DIR}/Log/segger_rtt/SEGGER_RTT_printf.c
-    )
-    target_include_directories(${EXECUTABLE} PRIVATE
-        ${CMAKE_CURRENT_SOURCE_DIR}/Log/segger_rtt
+        LOG_USING_RTT
     )
 else()
     message(FATAL_ERROR "Unsupported log interface selected...")
 endif()
+
 
 #---------------------------------------------------------------------------------------
 # Build type

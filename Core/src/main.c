@@ -22,8 +22,10 @@
  ******************************************************************************/
 #include <base_types.h>
 #include <ddl.h>
+#include <tiny_printf.h>
+#include "hal_lpuart.h"
+#include "SEGGER_RTT.h"
 #include "main.h"
-#include "printf.h"
 
 /******************************************************************************
  * Local pre-processor symbols/macros ('#define')
@@ -174,6 +176,18 @@ void Clk_XtalCfg(void)
     Sysctrl_ClkSourceEnable(SysctrlClkXTL, TRUE);
 }
 
+void sys_log_init(void)
+{
+#ifdef LOG_USING_LPUART
+    hal_lpuart_init();
+#elif defined(LOG_USING_LPUART_DMA)
+    hal_lpuart_init();
+    hal_lpuart_dma_config();
+#elif defined(LOG_USING_RTT)
+    SEGGER_RTT_Init();
+#endif
+}
+
 int main(void)
 {
     ///< 配置RCH
@@ -210,8 +224,11 @@ int main(void)
             Gpio_ClrIO(STK_LED_PORT, STK_LED_PIN); ///< LED关闭
             delay1ms(100);
         }
+        // while (!print_isdone()); /* 等待DMA传输完成后进入休眠 */
         ///< 进入低功耗模式——深度休眠(使能唤醒后退出中断执行执行该条语句后再此进入休眠)
+        ///< SWD（包括SEGGER RTT）可以将系统从休眠唤醒
         Lpm_GotoDeepSleep(FALSE);
+        // delay10us(2); /* 休眠和唤醒稳定性测试 */
         printf("wake\n");
     }
 }
@@ -248,7 +265,7 @@ void Rtc_IRQHandler(void)
 
 void Dmac_IRQHandler(void)
 {
-#ifdef LOG_LPUART_USE_DMA
+#ifdef LOG_USING_LPUART_DMA
     if (Dma_GetStat(LOG_LPUART_DMA_CHANNEL) == DmaTransferComplete) {
         Dma_ClrStat(LOG_LPUART_DMA_CHANNEL);
         printf_dma_done_irq_handle();

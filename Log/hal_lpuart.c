@@ -1,12 +1,10 @@
-#include "lpuart.h"
-#include "dmac.h"
 #include "tiny_printf.h"
 #include "hal_lpuart.h"
 #include "main.h"
 
 char printf_dma_buf[PRINTF_DMA_BUF_SIZE] = {0};
 
-void Hal_UartInit(void)
+void hal_lpuart_init(void)
 {
     stc_gpio_cfg_t GpioInitStruct = {0};
     stc_lpuart_cfg_t  LpuartInitStruct = {0};
@@ -29,13 +27,13 @@ void Hal_UartInit(void)
     LpuartInitStruct.stcBaud.u32Sclk = Sysctrl_GetPClkFreq();
     LPUart_Init(LOG_LPUART_SEL, &LpuartInitStruct);
 
-#ifdef LOG_LPUART_USE_DMA
+#ifdef LOG_USING_LPUART_DMA
     LPUart_ClrStatus(LOG_LPUART_SEL, LPUartTC);
     LPUart_EnableFunc(LOG_LPUART_SEL, LPUartDmaTxFunc);
 #endif
 }
 
-void Hal_UartDmaCfg(void)
+void hal_lpuart_dma_config(void)
 {
     stc_dma_cfg_t stcDmaCfg = {0};
 

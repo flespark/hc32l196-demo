@@ -120,7 +120,7 @@ typedef struct {
     void *arg;
 } out_fct_wrap_type;
 
-#ifdef LOG_LPUART_USE_DMA
+#ifdef LOG_USING_LPUART_DMA
 static bool printf_dma_busy = 0;
 
 char printf_dma_queue[PRINTF_DMA_QUEUE_SIZE] = {0};
@@ -209,11 +209,11 @@ static void printf_dma(void)
 
 bool print_isdone(void)
 {
-#ifdef LOG_LPUART_USE_DMA
+#ifdef LOG_USING_LPUART_DMA
     return (
         printf_dma_busy == 0                               // dma is idle
         && printf_dma_idx_w == printf_dma_idx_r            // and queue is empty
-        && Uart_GetStatus(LOG_LPUART_SEL, UartTxe) == TRUE); // and uart tx buf is empty
+        && LPUart_GetStatus(LOG_LPUART_SEL, LPUartTxe) == TRUE); // and uart tx buf is empty
 #else
     // FIXME: maybe not accurate
     return (LPUart_GetStatus(LOG_LPUART_SEL, LPUartTxe) == TRUE); // and uart tx buf is empty
@@ -244,10 +244,12 @@ static inline void _out_char(char character, void *buffer, size_t idx, size_t ma
     (void)idx;
     (void)maxlen;
     if (character) {
-#ifdef LOG_LPUART_USE_DMA
-        printf_dma_queue_push(character);
-#else
+#ifdef LOG_USING_LPUART
         LPUart_SendData(LOG_LPUART_SEL, character);
+#elif defined(LOG_USING_LPUART_DMA)
+        printf_dma_queue_push(character);
+#elif defined(LOG_USING_RTT)
+        SEGGER_RTT_PutChar(0, character);
 #endif
     }
 }
@@ -1087,7 +1089,7 @@ int __wrap_printf(const char *format, ...)
     const int ret = _vsnprintf(_out_char, buffer, (size_t)-1, format, va);
     va_end(va);
 
-#ifdef LOG_LPUART_USE_DMA
+#ifdef LOG_USING_LPUART_DMA
     printf_dma();
 #endif
     return ret;
