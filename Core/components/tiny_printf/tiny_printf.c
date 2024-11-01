@@ -35,7 +35,6 @@
 #include <stdio.h>
 #include <uart.h>
 #include <dmac.h>
-#include "hal_lpuart.h"
 #include "tiny_printf.h"
 #include "main.h"
 

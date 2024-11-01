@@ -1,6 +1,7 @@
-si swd
-speed 4000
-device HC32L19X
-r
-g
-q
+SelectInterface SWD
+Speed 4000
+Device HC32L19X
+ClrRESET
+Sleep 10
+SetRESET
+Exit

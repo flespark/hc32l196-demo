@@ -57,7 +57,7 @@ __WEAK void Tim5_IRQHandler(void);
 __WEAK void Tim6_IRQHandler(void);
 __WEAK void Pca_IRQHandler(void);
 __WEAK void Wdt_IRQHandler(void);
-__WEAK void Rtc_IRQHandler(void);
+void Rtc_IRQHandler(void);
 __WEAK void Adc_IRQHandler(void);
 __WEAK void Dac_IRQHandler(void);
 __WEAK void Pcnt_IRQHandler(void);

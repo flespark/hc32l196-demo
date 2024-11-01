@@ -20,11 +20,10 @@
 /******************************************************************************
  * Include files
  ******************************************************************************/
-#include <base_types.h>
-#include <ddl.h>
+#include <hal_gpio.h>
 #include <tiny_printf.h>
-#include "hal_lpuart.h"
-#include "SEGGER_RTT.h"
+#include <hal_lpuart.h>
+#include <SEGGER_RTT.h>
 #include "main.h"
 
 /******************************************************************************
@@ -71,39 +70,42 @@ typedef struct {
 /******************************************************************************
  * Local function prototypes ('static')
  ******************************************************************************/
-static void Clk_RchCfg(void);
-static void Clk_XtalCfg(void);
-static void App_LedInit(void);
-static void App_UserKeyInit(void);
-static void App_RtcCfg(void);
-static void App_LcdCfg(void);
-static void LCD_TimeDisplay(void);
-static void LCD_ColonMask(void);
+static void sys_rch_config(void);
+static void sys_xtal_config(void);
+static void sys_rtc_config(void);
+static void sys_log_init(void);
+static void bsp_led_init(void);
+static void bsp_key_init(void);
+static void app_lcd_config(void);
+static void bsp_key_irq_callback(void *unused);
 
 
 /******************************************************************************
  * Local variable definitions ('static')                                      *
  ******************************************************************************/
-static uint8_t sys_stat = 0;
+static uint32_t key_count;
+static hal_gpio_irq_t bsp_key_irq = {
+    .context = NULL,
+    .callback = bsp_key_irq_callback,
+};
 
-static const gpio_id lcd_gpio[] = {
-    {GpioPortA, GpioPin9},  // COM0
-    {GpioPortA, GpioPin10}, // COM1
-    {GpioPortA, GpioPin11}, // COM2
-    {GpioPortA, GpioPin12}, // COM3
-
-    {GpioPortA, GpioPin8},  // SEG0
-    {GpioPortC, GpioPin9},  // SEG1
-    {GpioPortC, GpioPin8},  // SEG2
-    {GpioPortC, GpioPin7},  // SEG3
-    {GpioPortC, GpioPin6},  // SEG4
-    {GpioPortB, GpioPin15}, // SEG5
-    {GpioPortB, GpioPin14}, // SEG6
-    {GpioPortB, GpioPin13}, // SEG7
-    {GpioPortB, GpioPin3},  // VLCDH
-    {GpioPortB, GpioPin4},  // VLCD3
-    {GpioPortB, GpioPin5},  // VLCD2
-    {GpioPortB, GpioPin6},  // VLCD1
+static const hal_gpio_pin_names_t lcd_gpio[] = {
+    LCD_COM0_Pin,
+    LCD_COM1_Pin,
+    LCD_COM2_Pin,
+    LCD_COM3_Pin,
+    LCD_SEG0_Pin,
+    LCD_SEG1_Pin,
+    LCD_SEG2_Pin,
+    LCD_SEG3_Pin,
+    LCD_SEG4_Pin,
+    LCD_SEG5_Pin,
+    LCD_SEG6_Pin,
+    LCD_SEG7_Pin,
+    LCD_VLCDH_Pin,
+    LCD_VLCD3_Pin,
+    LCD_VLCD2_Pin,
+    LCD_VLCD1_Pin,
 };
 
 static volatile unsigned int Lcd_Table[10] = {
@@ -117,7 +119,7 @@ static volatile unsigned int Lcd_Table[10] = {
  * Function implementation - global ('extern') and local ('static')
  ******************************************************************************/
 
-void Clk_RchCfg(void)
+void sys_rch_config(void)
 {
     ///< RCH时钟不同频率的切换，需要先将时钟切换到RCL
     Sysctrl_SetRCLTrim(SysctrlRclFreq32768);
@@ -157,7 +159,7 @@ void Clk_RchCfg(void)
  ** This sample
  **
  ******************************************************************************/
-void Clk_XtalCfg(void)
+void sys_xtal_config(void)
 {
     // conifg XTAL input pin PC13 and PC14
     // input
@@ -188,137 +190,23 @@ void sys_log_init(void)
 #endif
 }
 
-int main(void)
+static void bsp_key_irq_callback(void *unused)
 {
-    ///< 配置RCH
-    Clk_RchCfg();
-    ///< 配置XTAL
-    Clk_XtalCfg();
-    ///< 配置RTC
-    sys_log_init();
-    App_RtcCfg();
-    printf("started\n");
-    App_LcdCfg();                                          ///< LCD模块配置
-    Lcd_ClearDisp();             ///< 清屏
-    Lcd_WriteRam(0, 0x0f0f0f0f); ///< 赋值寄存器LCDRAM0
-    Lcd_WriteRam(1, 0x0f0f0f0f); ///< 赋值寄存器LCDRAM1
-
-    ///< LED 端口初始化
-    App_LedInit();
-    ///< KEY 端口初始化
-    App_UserKeyInit();
-
-    ///< ===============================================
-    ///< ============ 警告,警告,警告!!!=================
-    ///< ===============================================
-    ///< 本样例程序会进入深度休眠模式，因此以下两行代码起防护作用（防止进入深度
-    ///< 休眠后芯片调试功能不能再次使用），
-    ///< 在使用本样例时，禁止在没有唤醒机制的情况下删除以下两行代码。
-    delay1ms(200);
-    LCD_TimeDisplay();
-
-    while (1) {
-        while (sys_stat == 0) {
-            Gpio_SetIO(STK_LED_PORT, STK_LED_PIN); ///< LED点亮
-            delay1ms(100);
-            Gpio_ClrIO(STK_LED_PORT, STK_LED_PIN); ///< LED关闭
-            delay1ms(100);
-        }
-        // while (!print_isdone()); /* 等待DMA传输完成后进入休眠 */
-        ///< 进入低功耗模式——深度休眠(使能唤醒后退出中断执行执行该条语句后再此进入休眠)
-        ///< SWD（包括SEGGER RTT）可以将系统从休眠唤醒
-        Lpm_GotoDeepSleep(FALSE);
-        // delay10us(2); /* 休眠和唤醒稳定性测试 */
-        printf("wake\n");
-    }
+    key_count++;
 }
 
-///< Port中断服务函数
-void PortGPIO_IRQHandler(void)
+static void bsp_key_init(void)
 {
-    if (TRUE == Gpio_GetIrqStatus(STK_USER_PORT, STK_USER_PIN)) {
-        sys_stat = !sys_stat;
-        Gpio_ClearIrq(STK_USER_PORT, STK_USER_PIN);
-    } else {
-        Error_Handler();
-    }
+    hal_gpio_init_in(BSP_KEY_Pin, BSP_KEY_PP_MODE, BSP_KEY_IRQ_MODE, &bsp_key_irq);
+    hal_gpio_irq_attach(&bsp_key_irq);
 }
 
-///< RTC闹钟和周期中断服务函数
-void Rtc_IRQHandler(void)
+static void bsp_led_init(void)
 {
-    static uint8_t count = 0;
-    if (TRUE == Rtc_GetAlmfItStatus()) {
-        Rtc_ClearAlmfItStatus();
-    } else if (TRUE == Rtc_GetPridItStatus()) {
-        count++;
-        if (count & 1) {
-            LCD_ColonMask();
-        } else {
-            LCD_TimeDisplay();
-        }
-        Rtc_ClearPrdfItStatus();
-    } else {
-        Error_Handler();
-    }
+    hal_gpio_init_out(BSP_LED_Pin, BSP_LED_PP_MODE, 0);
 }
 
-void Dmac_IRQHandler(void)
-{
-#ifdef LOG_USING_LPUART_DMA
-    if (Dma_GetStat(LOG_LPUART_DMA_CHANNEL) == DmaTransferComplete) {
-        Dma_ClrStat(LOG_LPUART_DMA_CHANNEL);
-        printf_dma_done_irq_handle();
-    } else {
-        Error_Handler();
-    }
-#endif
-}
-
-static void App_UserKeyInit(void)
-{
-    stc_gpio_cfg_t stcGpioCfg = {0};
-
-    ///< 打开GPIO外设时钟门控
-    Sysctrl_SetPeripheralGate(SysctrlPeripheralGpio, TRUE);
-
-    ///< 端口方向配置->输入
-    stcGpioCfg.enDir = GpioDirIn;
-    ///< 端口驱动能力配置->高驱动能力
-    stcGpioCfg.enDrv = GpioDrvL;
-    ///< 端口上下拉配置->上拉
-    stcGpioCfg.enPu = GpioPuEnable;
-    stcGpioCfg.enPd = GpioPdDisable;
-    ///< 端口开漏输出配置->开漏输出关闭
-    stcGpioCfg.enOD = GpioOdDisable;
-    ///< 端口输入/输出值寄存器总线控制模式配置->AHB
-    stcGpioCfg.enCtrlMode = GpioAHB;
-    ///< 打开并配置按键端口为下降沿中断
-    Gpio_EnableIrq(STK_USER_PORT, STK_USER_PIN, GpioIrqFalling);
-    EnableNvic(STK_USER_IRQn, IrqLevel3, TRUE);
-    ///< GPIO IO USER KEY初始化
-    Gpio_Init(STK_USER_PORT, STK_USER_PIN, &stcGpioCfg);
-}
-
-static void App_LedInit(void)
-{
-    stc_gpio_cfg_t stcGpioCfg = {0};
-
-    ///< 打开GPIO外设时钟门控
-    Sysctrl_SetPeripheralGate(SysctrlPeripheralGpio, TRUE);
-
-    ///< 端口方向配置->输出(其它参数与以上（输入）配置参数一致)
-    stcGpioCfg.enDir = GpioDirOut;
-    ////< 端口上下拉配置->无
-    stcGpioCfg.enPu = GpioPuDisable;
-    stcGpioCfg.enPd = GpioPdDisable;
-    ///< GPIO IO LED端口初始化
-    Gpio_Init(STK_LED_PORT, STK_LED_PIN, &stcGpioCfg);
-    ///< LED关闭
-    Gpio_ClrIO(STK_LED_PORT, STK_LED_PIN);
-}
-
-void App_RtcCfg(void)
+void sys_rtc_config(void)
 {
     stc_rtc_initstruct_t RtcInitStruct = {0};
     stc_rtc_cyccfg_t RtcCycleIrqType = {0};
@@ -339,7 +227,6 @@ void App_RtcCfg(void)
     RtcInitStruct.rtcCompValue = 0;            // 补偿值  根据实际情况进行补偿
 
     Rtc_Init(&RtcInitStruct);
-    // Rtc_AlmIeCmd(TRUE); // 使能闹钟中断
     RtcCycleIrqType.rtcPrdsel = RtcPrds;
     RtcCycleIrqType.rtcPrds = Rtc05S;
     Rtc_SetCyc(&RtcCycleIrqType); // 使能0.5s周期中断
@@ -348,9 +235,8 @@ void App_RtcCfg(void)
 }
 
 
-void App_LcdCfg(void)
+void app_lcd_config(void)
 {
-    stc_gpio_cfg_t stcGpioCfg = {0};
     stc_lcd_cfg_t LcdInitStruct = {0};
     stc_lcd_segcom_t LcdSegCom = {0};
 
@@ -358,12 +244,7 @@ void App_LcdCfg(void)
     Sysctrl_SetPeripheralGate(SysctrlPeripheralGpio, TRUE);
 
     for (size_t i = 0; i < ARRAY_SZ(lcd_gpio); i++) {
-        stcGpioCfg.enDir = GpioDirIn;
-        stcGpioCfg.enPu = GpioPuDisable;
-        stcGpioCfg.enPd = GpioPdDisable;
-        stcGpioCfg.enCtrlMode = GpioAHB;
-        Gpio_Init(lcd_gpio[i].port, lcd_gpio[i].pin, &stcGpioCfg);
-        Gpio_SetAnalogMode(lcd_gpio[i].port, lcd_gpio[i].pin);
+        hal_gpio_init_af(lcd_gpio[i], false, HAL_GPIO_PULL_MODE_NONE, HAL_GPIO_AF_ANALOG);
     }
 
     Sysctrl_SetPeripheralGate(SysctrlPeripheralLcd, TRUE); ///< 开启LCD时钟
@@ -384,9 +265,11 @@ void App_LcdCfg(void)
     LcdInitStruct.LcdClkSrc = LcdXTL;       ///< LCD时钟选择RCL
     LcdInitStruct.LcdEn = LcdEnable;        ///< 使能LCD模块
     Lcd_Init(&LcdInitStruct);
+
+    Lcd_ClearDisp();             ///< 清屏
 }
 
-void LCD_TimeDisplay(void)
+void lcd_display_time(void)
 {
     stc_rtc_time_t rtc_val;
     if (Rtc_ReadDateTime(&rtc_val) != Ok) {
@@ -405,12 +288,53 @@ void LCD_TimeDisplay(void)
     M0P_LCD->RAM0 |= 0x80000;
 }
 
-void LCD_ColonMask(void)
+void lcd_mask_colon(void)
 {
     // Mask colon
     M0P_LCD->RAM0 &= ~0x80000;
 }
 
+int main(void)
+{
+    ///< 配置RCH
+    sys_rch_config();
+    ///< 配置XTAL
+    sys_xtal_config();
+    ///< 配置RTC
+    sys_log_init();
+    sys_rtc_config();
+    printf("started\n");
+    app_lcd_config();                                          ///< LCD模块配置
+
+    ///< LED 端口初始化
+    bsp_led_init();
+    ///< KEY 端口初始化
+    bsp_key_init();
+
+    ///< ===============================================
+    ///< ============ 警告,警告,警告!!!=================
+    ///< ===============================================
+    ///< 本样例程序会进入深度休眠模式，因此以下两行代码起防护作用（防止进入深度
+    ///< 休眠后芯片调试功能不能再次使用），
+    ///< 在使用本样例时，禁止在没有唤醒机制的情况下删除以下两行代码。
+    delay1ms(200);
+    lcd_display_time();
+
+    while (1) {
+        while ((key_count & 1) == 0) {
+            hal_gpio_set_value(BSP_LED_Pin, 1);
+            delay1ms(100);
+            hal_gpio_set_value(BSP_LED_Pin, 0);
+            delay1ms(100);
+        }
+        // while (!print_isdone()); /* 等待DMA传输完成后进入休眠 */
+        ///< 进入低功耗模式——深度休眠(使能唤醒后退出中断执行执行该条语句后再此进入休眠)
+        ///< SWD（包括SEGGER RTT）可以将系统从休眠唤醒
+        Lpm_GotoDeepSleep(FALSE);
+        // delay10us(2); /* 休眠和唤醒稳定性测试 */
+        printf("wake\n");
+    }
+}
 
 /**
   * @brief  This function is executed in case of error occurrence.
@@ -423,7 +347,7 @@ void Error_Handler(void)
     /* User can add his own implementation to report the HAL error return state */
     while(1)
     {
-        Gpio_SetIO(STK_LED_PORT, STK_LED_PIN); ///< LED点亮
+        hal_gpio_set_value(BSP_LED_Pin, 1);
     }
     /* USER CODE END Error_Handler */
 }

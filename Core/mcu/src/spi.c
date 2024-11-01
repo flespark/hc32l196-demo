@@ -13,7 +13,7 @@
  *
  * @brief  Source file for SPI functions
  *
- * @author MADS Team 
+ * @author MADS Team
  *
  ******************************************************************************/
 
@@ -262,7 +262,7 @@ en_result_t Spi_SendBuf(M0P_SPI_TypeDef* SPIx, uint8_t* pu8Buf, uint32_t u32Len)
         while(FALSE == SPIx->STAT_f.TXE){;}
         SPIx->DATA = pu8Buf[u32Index];
         while(FALSE == SPIx->STAT_f.RXNE){;}
-        pu8Buf[u32Index] = SPIx->DATA;
+        (void)SPIx->DATA;
     }
 
     while(FALSE == SPIx->STAT_f.TXE){;}

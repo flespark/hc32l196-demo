@@ -50,9 +50,6 @@ Revision: $Rev: 24316 $
 
 */
 
-#ifndef __SEGGER_RTT_CONF_H
-#define __SEGGER_RTT_CONF_H
-
 #ifndef SEGGER_RTT_CONF_H
 #define SEGGER_RTT_CONF_H
 
@@ -425,6 +422,3 @@ void OS_SIM_LeaveCriticalSection(void);
 
 #endif
 /*************************** End of file ****************************/
-
-
-#endif /* __SEGGER_RTT_CONF_H */

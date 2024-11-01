@@ -1,21 +1,14 @@
-#include "tiny_printf.h"
 #include "hal_lpuart.h"
+#include "hal_gpio.h"
 #include "main.h"
 
 char printf_dma_buf[PRINTF_DMA_BUF_SIZE] = {0};
 
 void hal_lpuart_init(void)
 {
-    stc_gpio_cfg_t GpioInitStruct = {0};
     stc_lpuart_cfg_t  LpuartInitStruct = {0};
 
-    Sysctrl_SetPeripheralGate(SysctrlPeripheralGpio, TRUE);
-
-    GpioInitStruct.enDir = GpioDirOut;
-    GpioInitStruct.enPu = GpioPuEnable;
-
-    Gpio_Init(LOG_TX_Port, LOG_TX_Pin, &GpioInitStruct);
-    Gpio_SetAfMode(LOG_TX_Port, LOG_TX_Pin, LOG_LPUART_AF);
+    hal_gpio_init_af(LOG_TX_Pin, 0, HAL_GPIO_PULL_MODE_UP, LOG_LPUART_AF);
 
     Sysctrl_SetPeripheralGate(LOG_LPUART_CLOCK, TRUE);
 

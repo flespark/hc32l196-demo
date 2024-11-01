@@ -1,5 +1,7 @@
 SelectInterface SWD
 Speed 4000
 Device HC32L19X
-Erase
+LoadFile @TARGET_BIN@ 0x0
+Reset
+Go
 Exit

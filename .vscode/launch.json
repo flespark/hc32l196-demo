@@ -4,10 +4,9 @@
     "projectName": "hc32l196-demo",
     "configurations": [
         {
-            // "showDevDebugOutput": "raw",
             "name": "jlink debug",
             "cwd": "${workspaceFolder}",
-            "executable": "${workspaceFolder}/build/hc32l196-demo.elf",
+            "executable": "C:/Users/08607/Desktop/Project/hc32-main/build/hc32l196-demo.elf",
             "request": "launch",
             "type": "cortex-debug",
             "servertype": "jlink",
@@ -16,17 +15,21 @@
             "interface": "swd",
             "svdPath": "${workspaceFolder}/Device/EWARM/HC32L19X.svd",
             "runToEntryPoint": "main",
-            "overrideResetCommands": ["monitor reset halt"],
-            // "gdbPath": "C:\\Program Files\\xpack-arm-none-eabi-gcc-13.2.1-1.1\\bin\\arm-none-eabi-gdb.exe",
+            "overrideResetCommands": ["monitor reset 0"],
             "liveWatch": {
                 "enabled": true,
                 "samplesPerSecond": 1
-            }
+            },
+            "preLaunchCommands": [
+                "show charset",
+                "set auto-load safe-path /",
+                "set print pretty",
+            ]
         },
         {
             "name": "jlink attach",
             "cwd": "${workspaceFolder}",
-            "executable": "${workspaceFolder}/build/hc32l196-demo.elf",
+            "executable": "C:/Users/08607/Desktop/Project/hc32-main/build/hc32l196-demo.elf",
             "request": "attach",
             "type": "cortex-debug",
             "servertype": "jlink",
@@ -37,7 +40,12 @@
             "liveWatch": {
                 "enabled": true,
                 "samplesPerSecond": 1
-            }
+            },
+            "postAttachCommands": [
+                "show charset",
+                "set auto-load safe-path /",
+                "set print pretty",
+            ]
         }
     ]
 }

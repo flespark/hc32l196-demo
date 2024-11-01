@@ -5,7 +5,6 @@
 #include <stdbool.h>
 #include <string.h>
 #include <stdarg.h>
-#include "hal_lpuart.h"
 
 #define PRINTF_DMA_QUEUE_SIZE 1024
 

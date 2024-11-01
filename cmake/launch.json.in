@@ -1,0 +1,51 @@
+// Configure debug launch settings
+{
+    "version": "0.2.0",
+    "projectName": "hc32l196-demo",
+    "configurations": [
+        {
+            "name": "jlink debug",
+            "cwd": "${workspaceFolder}",
+            "executable": "@TARGET_ELF@",
+            "request": "launch",
+            "type": "cortex-debug",
+            "servertype": "jlink",
+            "serverpath": "C:/Program Files/SEGGER/JLink/JLinkGDBServerCL.exe",
+            "device": "HC32L19X",
+            "interface": "swd",
+            "svdPath": "${workspaceFolder}/Device/EWARM/HC32L19X.svd",
+            "runToEntryPoint": "main",
+            "overrideResetCommands": ["monitor reset 0"],
+            "liveWatch": {
+                "enabled": true,
+                "samplesPerSecond": 1
+            },
+            "preLaunchCommands": [
+                "show charset",
+                "set auto-load safe-path /",
+                "set print pretty",
+            ]
+        },
+        {
+            "name": "jlink attach",
+            "cwd": "${workspaceFolder}",
+            "executable": "@TARGET_ELF@",
+            "request": "attach",
+            "type": "cortex-debug",
+            "servertype": "jlink",
+            "serverpath": "C:/Program Files/SEGGER/JLink/JLinkGDBServerCL.exe",
+            "device": "HC32L19X",
+            "interface": "swd",
+            "svdPath": "${workspaceFolder}/Device/EWARM/HC32L19X.svd",
+            "liveWatch": {
+                "enabled": true,
+                "samplesPerSecond": 1
+            },
+            "postAttachCommands": [
+                "show charset",
+                "set auto-load safe-path /",
+                "set print pretty",
+            ]
+        }
+    ]
+}
