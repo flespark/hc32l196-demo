@@ -48,6 +48,8 @@ SECTIONS
 {
 	.text :
 	{
+		. = ALIGN(4);
+		_stext = .;
 		KEEP(*(.vectors))
         . = ALIGN(4);
 		KEEP(*(.privilege_code*))
@@ -75,6 +77,8 @@ SECTIONS
 		*(.rodata*)
 
 		KEEP(*(.eh_frame*))
+		. = ALIGN(4);
+		_etext = .;
 	} > FLASH
 
 	.ARM.extab :
@@ -187,8 +191,11 @@ SECTIONS
 		PROVIDE ( end = . );
 		PROVIDE ( _end = . );
 		. = . + _Min_Heap_Size;
+		. = ALIGN(8);
+		_sstack = .;
 		. = . + _Min_Stack_Size;
 		. = ALIGN(8);
+		_estack = .;
 	} >RAM
 
 	/* Remove information from the standard libraries */

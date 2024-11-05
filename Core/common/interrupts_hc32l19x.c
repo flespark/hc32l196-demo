@@ -57,7 +57,7 @@ __WEAK void Tim5_IRQHandler(void);
 __WEAK void Tim6_IRQHandler(void);
 __WEAK void Pca_IRQHandler(void);
 __WEAK void Wdt_IRQHandler(void);
-void Rtc_IRQHandler(void);
+__WEAK void Rtc_IRQHandler(void);
 __WEAK void Adc_IRQHandler(void);
 __WEAK void Dac_IRQHandler(void);
 __WEAK void Pcnt_IRQHandler(void);
@@ -101,16 +101,20 @@ void EnableNvic(IRQn_Type enIrq, en_irq_level_t enLevel, boolean_t bEn)
  **
  ** \retval
  ******************************************************************************/
-void HardFault_Handler(void)
+__attribute__((naked)) void HardFault_Handler(void)
 {
-    volatile int a = 0;
-
-    while( 0 == a)
-    {
-        ;
-    }
+#ifdef DEBUG
+    __asm volatile
+    (
+        "mov     r0, lr                  \n"
+        "mov     r1, sp                  \n"
+        "bl      cm_backtrace_fault      \n"
+        "b       .                       \n"
+    );
+#else
+    NVIC_SystemReset();
+#endif
 }
-
 
 /**
  *******************************************************************************

@@ -40,6 +40,7 @@ file(GLOB_RECURSE CORE_SOURCES CONFIGURE_DEPENDS
     ${CMAKE_CURRENT_SOURCE_DIR}/common/*.c
     ${CMAKE_CURRENT_SOURCE_DIR}/components/tiny_printf/*.c
     ${CMAKE_CURRENT_SOURCE_DIR}/components/segger_rtt/*.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/components/cm_backtrace/*.c
 )
 
 target_sources(${CORE_LIB_NAME} PRIVATE ${CORE_SOURCES})
@@ -53,6 +54,7 @@ target_include_directories(${CORE_LIB_NAME} PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/bsp>
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/components/tiny_printf>
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/components/segger_rtt>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/components/cm_backtrace>
 )
 
 install(TARGETS   ${CORE_LIB_NAME}

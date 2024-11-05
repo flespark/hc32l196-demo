@@ -24,6 +24,7 @@
 #include <tiny_printf.h>
 #include <hal_lpuart.h>
 #include <SEGGER_RTT.h>
+#include "cm_backtrace.h"
 #include "main.h"
 
 /******************************************************************************
@@ -296,6 +297,9 @@ void lcd_mask_colon(void)
 
 int main(void)
 {
+#ifdef DEBUG
+    cm_backtrace_init("fw_name", "hw_name", "sw_name");
+#endif
     ///< 配置RCH
     sys_rch_config();
     ///< 配置XTAL
@@ -344,11 +348,13 @@ int main(void)
 void Error_Handler(void)
 {
     /* USER CODE BEGIN Error_Handler */
-    /* User can add his own implementation to report the HAL error return state */
-    while(1)
-    {
-        hal_gpio_set_value(BSP_LED_Pin, 1);
-    }
+#ifdef DEBUG
+#include "cmb_def.h"
+    print_call_stack(cmb_get_sp());
+    while (1);
+#else
+    NVIC_SystemReset();
+#endif
     /* USER CODE END Error_Handler */
 }
 

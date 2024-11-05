@@ -59,6 +59,7 @@ add_compile_options(
     -fno-unroll-loops
     -Wformat=2 -Wformat-truncation
     -Wundef
+    -Winfinite-recursion
     -Wfatal-errors
     -Wno-unused-parameter
     -fno-common

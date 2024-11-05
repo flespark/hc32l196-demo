@@ -45,7 +45,7 @@
     "C/C++ Include Guard.Prefix": "__",
     "C/C++ Include Guard.Remove Extension": false,
     "C/C++ Include Guard.Comment Style": "Block",
-    "cortex-debug.variableUseNaturalFormat": true,
+    "cortex-debug.variableUseNaturalFormat": false,
     // "terminal.integrated.gpuAcceleration": "canvas"
     "actionButtons": {
         // available icon: https://code.visualstudio.com/api/references/icons-in-labels
