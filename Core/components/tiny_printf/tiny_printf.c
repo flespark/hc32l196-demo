@@ -248,7 +248,7 @@ static inline void _out_char(char character, void *buffer, size_t idx, size_t ma
 #elif defined(LOG_USING_LPUART_DMA)
         printf_dma_queue_push(character);
 #elif defined(LOG_USING_RTT)
-        SEGGER_RTT_PutChar(0, character);
+        SEGGER_RTT_PutCharSkipNoLock(0, character);
 #endif
     }
 }
