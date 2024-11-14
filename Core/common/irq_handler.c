@@ -2,8 +2,7 @@
 #include "tiny_printf.h"
 #include "main.h"
 
-///< Port中断服务函数
-void PortGPIO_IRQHandler(void)
+void BSP_KEY_IRQ_Handler(void)
 {
     if (hal_gpio_get_irq_status(BSP_KEY_Pin)) {
         hal_gpio_irq_handler(BSP_KEY_Pin);

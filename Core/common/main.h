@@ -44,11 +44,12 @@
 #define LCD_VLCD2_Pin PB_5
 #define LCD_VLCD1_Pin PB_6
 
-#define BSP_KEY_Pin      PA_7
-#define BSP_KEY_PP_MODE  HAL_GPIO_PULL_MODE_UP
-#define BSP_KEY_IRQ_MODE HAL_GPIO_IRQ_MODE_FALLING
-#define BSP_LED_Pin      PD_14
-#define BSP_LED_PP_MODE  HAL_GPIO_PULL_MODE_NONE
+#define BSP_KEY_Pin         PA_7
+#define BSP_KEY_PP_MODE     HAL_GPIO_PULL_MODE_UP
+#define BSP_KEY_IRQ_MODE    HAL_GPIO_IRQ_MODE_FALLING
+#define BSP_LED_Pin         PD_14
+#define BSP_LED_PP_MODE     HAL_GPIO_PULL_MODE_NONE
+#define BSP_KEY_IRQ_Handler PortA_IRQHandler
 
 extern void lcd_display_time(void);
 extern void lcd_mask_colon(void);
