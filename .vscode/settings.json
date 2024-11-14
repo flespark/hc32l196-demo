@@ -50,8 +50,11 @@
     // "terminal.integrated.gpuAcceleration": "canvas"
     "actionButtons": {
         // available icon: https://code.visualstudio.com/api/references/icons-in-labels
-        // "defaultColor": "orange",
+        // "defaultColor": "orange", // chnage font color for readability
         "reloadButton": null,
+        "customVars": {
+            "jlink_sn": "99999999", // designate jlink by serial number
+        },
         "commands": [
             {
                 "name": "$(zap)Flash",
@@ -59,6 +62,7 @@
                 "focus": true,
                 "terminalName": "JLink Flash",
                 "command": "JLink -CommanderScript ${workspaceFolder}/Device/flash_mcu.jlink",
+                // "command": "JLink -SelectEmuBySN ${jlink_sn} -CommanderScript ${workspaceFolder}/Device/flash_mcu.jlink",
             },
             {
                 "name": "$(debug-restart)Reset",
@@ -66,6 +70,7 @@
                 "focus": true,
                 "terminalName": "JLink Reset",
                 "command": "JLink -CommanderScript ${workspaceFolder}/Device/reset_mcu.jlink",
+                // "command": "JLink -SelectEmuBySN ${jlink_sn} -CommanderScript ${workspaceFolder}/Device/reset_mcu.jlink",
             },
             {
                 "name": "$(trash)Erase",
@@ -73,8 +78,10 @@
                 "focus": true,
                 "terminalName": "JLink Erase",
                 "command": "JLink -CommanderScript ${workspaceFolder}/Device/erase_mcu.jlink",
+                // "command": "JLink -SelectEmuBySN ${jlink_sn} -CommanderScript ${workspaceFolder}/Device/erase_mcu.jlink",
             }
         ]
-    }
+    },
+
 
 }

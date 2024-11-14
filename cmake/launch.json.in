@@ -13,6 +13,7 @@
             "serverpath": "C:/Program Files/SEGGER/JLink/JLinkGDBServerCL.exe",
             "device": "HC32L19X",
             "interface": "swd",
+            // "serialNumber": "99999999", // designate jlink by serial number
             "svdPath": "${workspaceFolder}/Device/EWARM/HC32L19X.svd",
             "runToEntryPoint": "main",
             "overrideResetCommands": ["monitor reset 0"],
@@ -36,6 +37,7 @@
             "serverpath": "C:/Program Files/SEGGER/JLink/JLinkGDBServerCL.exe",
             "device": "HC32L19X",
             "interface": "swd",
+            // "serialNumber": "99999999",
             "svdPath": "${workspaceFolder}/Device/EWARM/HC32L19X.svd",
             "liveWatch": {
                 "enabled": true,
