@@ -25,6 +25,7 @@
         "build/": true,
         "test/": true,
     },
+    "cmake.generator": "Ninja",
     "cmake.configureArgs": [
         "-DPROJECT_NAME=hc32l196-demo"
     ],
