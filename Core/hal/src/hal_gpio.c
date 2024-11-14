@@ -5,8 +5,8 @@
 #include <stdbool.h> // bool type
 #include <stdint.h>  // C99 types
 
+#include "gpio.h"
 #include "hal_gpio.h"
-#include "main.h"
 
 /*
  * -----------------------------------------------------------------------------
@@ -89,11 +89,11 @@ void hal_gpio_init_in(
     }
 
     stcGpioCfg.enDrv      = GpioDrvL;
-    stcGpioCfg.enCtrlMode = GpioAHB;
+    stcGpioCfg.enCtrlMode = GpioFastIO;
 
     Gpio_Init(PIN_PORT(gpio_port_map, pin), PIN_NUM(pin), &stcGpioCfg);
 
-    if (irq_mode != HAL_GPIO_IRQ_MODE_OFF && irq != NULL) {
+    if (irq_mode != HAL_GPIO_IRQ_MODE_NONE && irq != NULL) {
         en_gpio_irqtype_t enType;
         switch (irq_mode) {
         case HAL_GPIO_IRQ_MODE_RISING:
@@ -135,7 +135,7 @@ void hal_gpio_init_out(const hal_gpio_pin_names_t pin, hal_gpio_pull_mode_t pull
         break;
     }
     stcGpioCfg.enDrv      = GpioDrvH;
-    stcGpioCfg.enCtrlMode = GpioAHB;
+    stcGpioCfg.enCtrlMode = GpioFastIO;
     stcGpioCfg.bOutputVal = value ? TRUE : FALSE;
 
     Gpio_Init(PIN_PORT(gpio_port_map, pin), PIN_NUM(pin), &stcGpioCfg);
@@ -167,7 +167,7 @@ void hal_gpio_init_af(
         stcGpioCfg.enPd = GpioPdDisable;
         break;
     }
-    stcGpioCfg.enCtrlMode = GpioAHB;
+    stcGpioCfg.enCtrlMode = GpioFastIO;
 
     Gpio_Init(PIN_PORT(gpio_port_map, pin), PIN_NUM(pin), &stcGpioCfg);
     if (alternate == HAL_GPIO_AF_ANALOG) {

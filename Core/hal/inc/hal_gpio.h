@@ -10,7 +10,7 @@ extern "C" {
  * --- DEPENDENCIES ------------------------------------------------------------
  */
 #include <stdbool.h>
-#include "gpio.h"
+#include <stdint.h>
 
 /*
  * -----------------------------------------------------------------------------
@@ -159,7 +159,7 @@ typedef enum gpio_pull_mode_e
  */
 typedef enum gpio_irq_mode_e
 {
-    HAL_GPIO_IRQ_MODE_OFF            = 0,
+    HAL_GPIO_IRQ_MODE_NONE            = 0,
     HAL_GPIO_IRQ_MODE_RISING         = 1,
     HAL_GPIO_IRQ_MODE_FALLING        = 2,
 } hal_gpio_irq_mode_t;
@@ -204,11 +204,11 @@ void hal_gpio_init_out(const hal_gpio_pin_names_t pin, hal_gpio_pull_mode_t pull
  * \param [in]     pull_mode MCU pin pull mode [HAL_GPIO_PULL_MODE_NONE,
  *                                              HAL_GPIO_PULL_MODE_UP,
  *                                              HAL_GPIO_PULL_MODE_DOWN]
- * \param [in]     irq_mode  MCU IRQ mode [HAL_GPIO_IRQ_MODE_OFF,
+ * \param [in]     irq_mode  MCU IRQ mode [HAL_GPIO_IRQ_MODE_NONE,
  *                                         HAL_GPIO_IRQ_MODE_RISING,
  *                                         HAL_GPIO_IRQ_MODE_FALLING]
  * \param [in/out] irq       Pointer to IRQ data context.
- *                              NULL when HAL_GPIO_IRQ_MODE_OFF
+ *                              NULL when HAL_GPIO_IRQ_MODE_NONE
  *                              pin parameter is initialized
  * \note IRQ callback only enable after hal_gpio_irq_attach
  */
