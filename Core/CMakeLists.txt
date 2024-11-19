@@ -1,8 +1,8 @@
-set(CORE_LIB_NAME mcu_core)
+set(CORE_INTERFACE mcu_core)
 
-project(${CORE_LIB_NAME})
+project(${CORE_INTERFACE})
 
-add_library(${CORE_LIB_NAME} STATIC)
+add_library(${CORE_INTERFACE} INTERFACE)
 
 # Accessible log interface
 set(LOG_INTERFACE_LIST none uart uart_dma rtt)
@@ -14,17 +14,17 @@ if(${LOG_INTERFACE} STREQUAL none)
     message(STATUS "Log not enabled")
 elseif(${LOG_INTERFACE} STREQUAL uart)
     message(STATUS "Log interface use UART")
-    target_compile_definitions(${CORE_LIB_NAME} PUBLIC
+    target_compile_definitions(${CORE_INTERFACE} INTERFACE
         LOG_USING_LPUART
     )
 elseif(${LOG_INTERFACE} STREQUAL uart_dma)
     message(STATUS "Log interface use UART with DMA")
-    target_compile_definitions(${CORE_LIB_NAME} PUBLIC
+    target_compile_definitions(${CORE_INTERFACE} INTERFACE
         LOG_USING_LPUART_DMA
     )
 elseif(${LOG_INTERFACE} STREQUAL rtt)
     message(STATUS "Log interface use RTT, NOTICE: RTT will wake MCU from low power")
-    target_compile_definitions(${CORE_LIB_NAME} PUBLIC
+    target_compile_definitions(${CORE_INTERFACE} INTERFACE
         LOG_USING_RTT
     )
 else()
@@ -43,9 +43,9 @@ file(GLOB_RECURSE CORE_SOURCES CONFIGURE_DEPENDS
     ${CMAKE_CURRENT_SOURCE_DIR}/components/cm_backtrace/*.c
 )
 
-target_sources(${CORE_LIB_NAME} PRIVATE ${CORE_SOURCES})
+target_sources(${CORE_INTERFACE} INTERFACE ${CORE_SOURCES})
 
-target_include_directories(${CORE_LIB_NAME} PUBLIC
+target_include_directories(${CORE_INTERFACE} INTERFACE
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/cmsis/Include>
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/cmsis/Device/HDSC/${MCU_FAMILY}/Include>
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/mcu/inc>
@@ -55,18 +55,4 @@ target_include_directories(${CORE_LIB_NAME} PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/components/tiny_printf>
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/components/segger_rtt>
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/components/cm_backtrace>
-)
-
-install(TARGETS   ${CORE_LIB_NAME}
-    EXPORT        ${CORE_LIB_NAME}Targets
-    ARCHIVE       DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    LIBRARY       DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${CORE_LIB_NAME}
-    COMPONENT     library
-)
-
-install(EXPORT ${CORE_LIB_NAME}Targets
-    FILE ${CORE_LIB_NAME}Targets.cmake
-    NAMESPACE ${PROJECT_NAME}::
-    DESTINATION lib/cmake/${CORE_LIB_NAME}
 )

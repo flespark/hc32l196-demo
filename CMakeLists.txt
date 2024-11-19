@@ -54,11 +54,6 @@ target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
 )
 
 target_link_libraries(${CMAKE_PROJECT_NAME} mcu_core)
-target_link_options(${CMAKE_PROJECT_NAME} PRIVATE
-    -Wl,--whole-archive
-    $<TARGET_FILE:mcu_core>
-    -Wl,--no-whole-archive
-)
 
 generate_debugger_config(${CMAKE_BUILD_TARGET})
 ###############################################################################

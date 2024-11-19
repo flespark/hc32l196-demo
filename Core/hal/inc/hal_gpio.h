@@ -179,10 +179,6 @@ typedef enum gpio_af_e
     HAL_GPIO_AF_DIGITAL_7 = 7,
 } hal_gpio_af_t;
 
-typedef enum gpio_alternate_function_e
-{
-    HAL_GPIO_ALTERNATE_FUNCTION_0 = 0,
-} hal_gpio_alternate_function_t;
 /*
  * -----------------------------------------------------------------------------
  * --- PUBLIC FUNCTIONS PROTOTYPES ---------------------------------------------
