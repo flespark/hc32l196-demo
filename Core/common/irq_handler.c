@@ -7,8 +7,6 @@ void BSP_KEY_IRQ_Handler(void)
     if (hal_gpio_get_irq_status(BSP_KEY_Pin)) {
         hal_gpio_irq_handler(BSP_KEY_Pin);
         hal_gpio_clear_pending_irq(BSP_KEY_Pin);
-    } else {
-        Error_Handler();
     }
 }
 
@@ -26,8 +24,6 @@ void Rtc_IRQHandler(void)
             lcd_display_time();
         }
         Rtc_ClearPrdfItStatus();
-    } else {
-        Error_Handler();
     }
 }
 
@@ -37,8 +33,6 @@ void Dmac_IRQHandler(void)
     if (Dma_GetStat(LOG_LPUART_DMA_CHANNEL) == DmaTransferComplete) {
         Dma_ClrStat(LOG_LPUART_DMA_CHANNEL);
         printf_dma_done_irq_handle();
-    } else {
-        Error_Handler();
     }
 #endif
 }

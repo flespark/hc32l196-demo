@@ -218,7 +218,7 @@ void sys_rtc_config(void)
     RtcInitStruct.rtcPrdsel.rtcPrdsel = RtcPrdx;           // 周期中断类型PRDX
     RtcInitStruct.rtcPrdsel.rtcPrdx = 1u;                  // 周期中断时间间隔 1秒
     RtcInitStruct.rtcTime.u8Second = 0x55;                 // 配置RTC时间
-    RtcInitStruct.rtcTime.u8Minute = 0x01;
+    RtcInitStruct.rtcTime.u8Minute = 0x08;
     RtcInitStruct.rtcTime.u8Hour = 0x10;
     RtcInitStruct.rtcTime.u8Day = 0x17;
     RtcInitStruct.rtcTime.u8DayOfWeek = 0x04;
@@ -273,9 +273,7 @@ void app_lcd_config(void)
 void lcd_display_time(void)
 {
     stc_rtc_time_t rtc_val;
-    if (Rtc_ReadDateTime(&rtc_val) != Ok) {
-        Error_Handler();
-    }
+    Rtc_ReadDateTime(&rtc_val);
     // display time number
     M0P_LCD->RAM0 &= 0xffff0000;
     M0P_LCD->RAM0 |= Lcd_Table[rtc_val.u8Hour >> 4];
