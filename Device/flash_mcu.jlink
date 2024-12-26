@@ -1,7 +1,0 @@
-SelectInterface SWD
-Speed 4000
-Device HC32L19X
-LoadFile C:/Users/08607/Desktop/Project/hc32-main/build/hc32l196-demo.bin 0x0
-Reset
-Go
-Exit
