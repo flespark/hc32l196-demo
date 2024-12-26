@@ -333,7 +333,7 @@ en_result_t Flash_Write16(uint32_t u32Addr, uint16_t pu16Data[], uint32_t u32Len
         return ErrorInvalidMode;
     }
 
-    if (FLASH_END_ADDR < (u32Addr + u32Len - 1))
+    if (FLASH_END_ADDR < (u32Addr + u32Len * 2 - 1))
     {
         enResult = ErrorInvalidParameter;
         return (enResult);
@@ -403,7 +403,7 @@ en_result_t Flash_Write32(uint32_t u32Addr, uint32_t pu32Data[], uint32_t u32Len
         return ErrorInvalidMode;
     }
 
-    if (FLASH_END_ADDR < (u32Addr + u32Len - 1))
+    if (FLASH_END_ADDR < (u32Addr + u32Len * 4 - 1))
     {
         enResult = ErrorInvalidParameter;
         return (enResult);
