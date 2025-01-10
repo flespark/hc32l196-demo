@@ -15,6 +15,7 @@
             "interface": "swd",
             // "serialNumber": "99999999", // designate jlink by serial number
             "svdPath": "${workspaceFolder}/Device/EWARM/HC32L19X.svd",
+            "armToolchainPath": "@TOOLCHAIN_FOLDER@",
             "runToEntryPoint": "main",
             "overrideResetCommands": ["monitor reset 0"],
             "liveWatch": {
@@ -39,6 +40,7 @@
             "interface": "swd",
             // "serialNumber": "99999999",
             "svdPath": "${workspaceFolder}/Device/EWARM/HC32L19X.svd",
+            "armToolchainPath": "@TOOLCHAIN_FOLDER@",
             "liveWatch": {
                 "enabled": true,
                 "samplesPerSecond": 1
