@@ -7,9 +7,13 @@
         "twxs.cmake",
         "ms-vscode.cmake-tools",
         "marus25.cortex-debug",
+        "mcu-debug.memory-view",
+        "mcu-debug.peripheral-viewer",
         "EditorConfig.EditorConfig",
         "jkearins.action-buttons-ext",
         "dan-c-underwood.arm",
+        "ZixuanWang.linkerscript",
+        "trond-snekvik.gnu-mapfiles",
         "akiramiyakoda.cppincludeguard",
     ],
     "unwantedRecommendations": [

@@ -41,3 +41,5 @@ Relaese/
 ref
 tool
 test
+.vscode/launch.json
+Device/flash_mcu.jlink
